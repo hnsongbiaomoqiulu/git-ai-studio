@@ -1,7 +1,7 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { FORMULA_POPOVER_LABELS } from "../lib/copy";
 import { METRICS } from "../lib/formulas";
 import type { FormulaToken, MetricId } from "../lib/formulas";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/PopoverPanel";
@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/PopoverPanel";
  * - aria-haspopup="dialog" 让屏读器知道这是一个对话面板
  */
 export function FormulaPopover({ metricId }: { metricId: MetricId }) {
+  const { t } = useTranslation();
   const [active, setActive] = useState<MetricId>(metricId);
   // 注意:trigger 的 aria-label 锚定到原始 metricId,而不是 active —— 否则二级展开后
   // 关闭瞬间屏读器会读到错的标签。
@@ -30,6 +31,8 @@ export function FormulaPopover({ metricId }: { metricId: MetricId }) {
           type="button"
           aria-label={`${triggerMeta.title} 公式说明`}
           aria-haspopup="dialog"
+          // 指标卡可能整体可点(如 hook 覆盖率跳 Hooks 页),阻止点 ? 时冒泡触发卡片跳转
+          onClick={(e) => e.stopPropagation()}
           className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-slate-400 hover:text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-ring dark:hover:text-slate-200"
         >
           <Info className="h-3.5 w-3.5" />
@@ -39,18 +42,18 @@ export function FormulaPopover({ metricId }: { metricId: MetricId }) {
         <div className="space-y-2.5">
           <div className="text-sm font-semibold">{meta.title}</div>
 
-          <Section label={FORMULA_POPOVER_LABELS.definition}>
+          <Section label={t("formula.definition")}>
             <div className="text-[12px] leading-relaxed text-slate-700 dark:text-slate-200">
               {meta.definition}
             </div>
           </Section>
 
-          <Section label={FORMULA_POPOVER_LABELS.formula}>
+          <Section label={t("formula.formula")}>
             <FormulaTokens tokens={meta.formula} activeId={active} onPick={(id) => setActive(id)} />
           </Section>
 
           {meta.example && (
-            <Section label={FORMULA_POPOVER_LABELS.example}>
+            <Section label={t("formula.example")}>
               <div className="text-[11px] leading-relaxed text-slate-500">{meta.example}</div>
             </Section>
           )}

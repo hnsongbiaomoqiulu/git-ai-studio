@@ -903,5 +903,51 @@
     "upToDate": "已是最新版本",
     "checkFailed": "检查更新失败",
     "installFailed": "下载或安装更新失败"
+  },
+  "pet": {
+    "settings": {
+      "title": "桌面宠物",
+      "hint": "桌面角落的小伙伴,身上的双色环实时反映 AI 代码占比(紫=AI、蓝=你);出现 hook 未配置、打标失败、daemon 异常等情况时会整只变色 + 抖动 + 弹出文字提示。默认关闭,可随时关掉,不影响其它功能。",
+      "themeLabel": "形象",
+      "themeHint": "切换宠物形象;信息层(紫=AI、蓝=你)始终不变。",
+      "themes": {
+        "robot3d": "3D 机器人",
+        "robotflat": "扁平机器人",
+        "inkbeast": "水墨灵兽"
+      },
+      "sizeLabel": "大小",
+      "sizes": {
+        "small": "小",
+        "medium": "中",
+        "large": "大"
+      },
+      "opacityLabel": "透明度",
+      "alertLabel": "醒目提醒",
+      "alertHint": "出问题时整只染色 + 抖动 + 弹文字;可设重复提醒间隔。",
+      "alertOff": "关"
+    },
+    "states": {
+      "ok": "一切正常",
+      "attributing": "正在记录归因…",
+      "attributionFailed": "上次提交打标失败",
+      "daemonUnhealthy": "git-ai daemon 异常",
+      "hookMissing": "hook 未配置,改动不会被归因",
+      "lowAiShare": "AI 占比偏低",
+      "sleeping": "休息中",
+      "unknown": "正在读取归因…"
+    },
+    "bubble": {
+      "noData": "AI —",
+      "urgentHint": "双击查看诊断"
+    },
+    "menu": {
+      "openMain": "显示主窗口",
+      "cycleTheme": "切换形象",
+      "hide": "隐藏宠物"
+    },
+    "toast": {
+      "enabled": "桌面宠物已开启",
+      "disabled": "桌面宠物已关闭"
+    }
   }
 }

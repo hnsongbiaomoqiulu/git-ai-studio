@@ -27,10 +27,12 @@ import type {
 } from "./types";
 
 const t = (key: string, opts?: Record<string, unknown>): string =>
-  i18n.t(key, opts ?? {}) as string;
+  (i18n.t as (k: string, o?: Record<string, unknown>) => string)(key, opts);
 
 const tArray = (key: string): string[] => {
-  const v = i18n.t(key, { returnObjects: true });
+  const v = (i18n.t as (k: string, o?: Record<string, unknown>) => unknown)(key, {
+    returnObjects: true,
+  });
   return Array.isArray(v) ? (v as string[]) : [];
 };
 

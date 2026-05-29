@@ -94,7 +94,7 @@ export function OnboardingCard({
                 <Circle className="h-3.5 w-3.5 text-muted-foreground/50" />
               )}
               <span className={cn(done ? "text-muted-foreground line-through" : "text-foreground")}>
-                {t(s.labelKey)}
+                {t(s.labelKey as never)}
               </span>
             </li>
           );

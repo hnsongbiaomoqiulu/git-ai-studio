@@ -38,6 +38,7 @@ See [`docs/product/PR-FAQ.md`](docs/product/PR-FAQ.md) for the full positioning 
 - **Blame** — file-level, line-by-line: who wrote it, which model, via which prompt
 - **Checkpoints / Notes** — inspect raw `refs/notes/ai` payloads from the AI agents
 - **Hooks / Diagnostic** — install official `git-ai` hooks for your agent in one click; diagnose env in one screen
+- **Desktop pet** (opt-in, off by default) — an ink-drop companion in a screen corner whose two-tone blend mirrors your live AI share, and that shifts shape when the hook is missing, a commit fails to tag, or the daemon gets stuck. _Known limits:_ the transparent overlay needs a compositor on Linux and may fall back to opaque on older Windows WebView2 builds; selective click-through is deferred to a later release. See [ADR-011](docs/adr/0011-desktop-companion-ink-pet.md).
 
 All parsing happens locally. No account, no telemetry, no crash reporter — just a single version-number check to GitHub at launch (turn it off with `plugins.updater.active=false`).
 

@@ -15,9 +15,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowRight, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { getCommitStatus } from "../lib/api";
-import { WORKING_DIR_SUMMARY } from "../lib/copy";
 import { formatInt, formatPercent } from "../lib/formulas";
 import type { StatsResult } from "../lib/types";
 import { useRouter } from "../router";
@@ -36,6 +36,7 @@ export const WORKING_DIR_SHA_TOKEN = "__WORKING__";
 
 export function WorkingDirSummary({ repoPath, jumpTo = "stats", refetchMs = 10_000 }: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const statusQ = useQuery<StatsResult>({
     queryKey: ["commit_status", repoPath],
@@ -77,11 +78,11 @@ export function WorkingDirSummary({ repoPath, jumpTo = "stats", refetchMs = 10_0
           handleJump();
         }
       }}
-      title={WORKING_DIR_SUMMARY.tooltip_template(
-        view.stats.human_additions,
-        view.stats.unknown_additions,
-        view.stats.ai_additions,
-      )}
+      title={t("workingDir.tooltipTemplate", {
+        h: view.stats.human_additions,
+        u: view.stats.unknown_additions,
+        a: view.stats.ai_additions,
+      })}
       className="group flex cursor-pointer items-center gap-3 rounded-md border border-primary bg-primary/5 px-3 py-2 text-xs transition-colors hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring dark:border-primary/40 dark:bg-primary/10 dark:hover:bg-primary/20"
     >
       {statusQ.isFetching && (
@@ -90,7 +91,7 @@ export function WorkingDirSummary({ repoPath, jumpTo = "stats", refetchMs = 10_0
       {!statusQ.isFetching && (
         <Activity className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
       )}
-      <span className="font-medium text-primary">{WORKING_DIR_SUMMARY.label}</span>
+      <span className="font-medium text-primary">{t("workingDir.label")}</span>
       <span className="font-mono text-primary">{formatInt(total)} 行</span>
       <ThreeSegmentBar
         human={view.stats.human_additions}

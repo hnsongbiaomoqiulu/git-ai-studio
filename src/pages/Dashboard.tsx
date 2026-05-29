@@ -71,7 +71,7 @@ const STALE_TIME_MS = DASHBOARD_CACHE_HINT.stale_time_seconds * 1000;
  * 用 5min 避免切窗口/刷新时频繁触发重算。比主体 30s 缓存长一个量级。
  */
 const RANGE_SUMMARY_STALE_TIME_MS = 5 * 60 * 1000;
-const DEFAULT_RANGE: TimeRange = { kind: "today" };
+const DEFAULT_RANGE: TimeRange = { kind: "this_week" };
 /** Recent commits 表格上限 — 超过的 commit 提示有"更多"。 */
 const RECENT_LIMIT = 12;
 

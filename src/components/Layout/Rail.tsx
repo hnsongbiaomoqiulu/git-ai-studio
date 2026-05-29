@@ -96,13 +96,13 @@ export function Rail({
         {GROUPS.map((group) => (
           <div key={group.titleKey}>
             <div className="px-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              {t(group.titleKey)}
+              {t(group.titleKey as never)}
             </div>
             {group.items.map((it) => (
               <RailButton
                 key={it.id}
                 icon={it.icon}
-                label={t(it.labelKey)}
+                label={t(it.labelKey as never)}
                 active={it.id === current}
                 onClick={() => onNavigate(it.id)}
               />

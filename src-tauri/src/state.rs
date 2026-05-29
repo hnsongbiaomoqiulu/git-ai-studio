@@ -126,6 +126,9 @@ pub struct AppSettings {
     pub notifications: NotificationsConfig,
     #[serde(default)]
     pub repo_setup_seen: bool,
+    /// 桌面宠物(Ink pet)配置。默认关(opt-in)。详见 ADR-011。
+    #[serde(default)]
+    pub pet: PetConfig,
     // ====== 已废弃 / 迁移用字段 ======
     /// **已废弃**:历史顶层位置;`load()` 会把它迁到 `notifications.cc_switch_auto_repair`。
     /// 用 `skip_serializing_if` 让迁移完成后下一次 save 不再写出。
@@ -185,6 +188,30 @@ pub struct LowAiShareConfig {
     /// - 既有冷却(切仓 5 分钟 / 提醒间隔 6 小时)在两种模式下都生效
     #[serde(default)]
     pub realtime_enabled: Option<bool>,
+}
+
+/// 桌面宠物(Ink pet)配置。默认关。审美层(主题 / 颜色)可由用户切换,信息层(色 → 数据
+/// 映射)由前端 renderer 锁死,本结构只存用户偏好。详见 ADR-011。
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct PetConfig {
+    /// 总开关,默认 false(opt-in)。翻转时 `set_app_settings` 即时显隐 pet 窗口。
+    #[serde(default)]
+    pub enabled: bool,
+    /// 选中的形象主题 id;None 视为前端默认 "robot3d"。三套内置:robot3d / robotflat / inkbeast。
+    #[serde(default)]
+    pub theme_id: Option<String>,
+    /// 上次拖拽后的窗口位置(physical x, y);None = 用 tauri.conf 默认位置。
+    #[serde(default)]
+    pub position: Option<(i32, i32)>,
+    /// 尺寸档位:"small" | "medium" | "large";None 视为前端默认 "medium"。
+    #[serde(default)]
+    pub size: Option<String>,
+    /// 整体不透明度 [0.2, 1.0];None 视为前端默认 1.0。后端 `set_app_settings` clamp。
+    #[serde(default)]
+    pub opacity: Option<f32>,
+    /// 醒目提醒重复间隔(秒);0 = 只提醒一次不重复。None 视为前端默认 30。
+    #[serde(default)]
+    pub alert_interval_sec: Option<u32>,
 }
 
 /// 解析 [`AppSettings::close_behavior`] 字符串为枚举。任何非 "tray" 字面值(含 None / 拼写错误)
@@ -357,5 +384,28 @@ mod tests {
         let s: AppSettings = serde_json::from_str(raw).unwrap();
         let json = serde_json::to_string(&s).unwrap();
         assert!(!json.contains("feishu_webhook"), "废弃字段不应回写: {json}");
+    }
+
+    #[test]
+    fn pet_config_defaults_off_and_round_trips() {
+        let s = AppSettings::default();
+        assert!(!s.pet.enabled, "宠物默认关(opt-in)");
+        assert!(s.pet.theme_id.is_none());
+        assert!(s.pet.position.is_none());
+
+        let mut s = s;
+        s.pet.enabled = true;
+        s.pet.theme_id = Some("robotflat".to_string());
+        s.pet.position = Some((100, 200));
+        s.pet.size = Some("large".to_string());
+        s.pet.opacity = Some(0.8);
+        s.pet.alert_interval_sec = Some(60);
+        let json = serde_json::to_string(&s).unwrap();
+        let parsed: AppSettings = serde_json::from_str(&json).unwrap();
+        assert!(parsed.pet.enabled);
+        assert_eq!(parsed.pet.theme_id.as_deref(), Some("robotflat"));
+        assert_eq!(parsed.pet.position, Some((100, 200)));
+        assert_eq!(parsed.pet.size.as_deref(), Some("large"));
+        assert_eq!(parsed.pet.alert_interval_sec, Some(60));
     }
 }

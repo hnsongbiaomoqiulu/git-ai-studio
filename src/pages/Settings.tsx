@@ -12,6 +12,7 @@ import {
   Power,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
   Sun,
   Upload,
   UserCircle2,
@@ -65,11 +66,13 @@ import {
   normalizeLowAiShareTargetEmails,
 } from "../lib/lowAiShareNotifier";
 import type {
+  AppSettingsPatch,
   AuthState,
   CloseBehavior,
   EffectiveIgnorePatternsResult,
   WhoamiResult,
 } from "../lib/types";
+import { DEFAULT_PET_THEME_ID, PET_THEMES } from "../lib/petState";
 import { useRouter } from "../router";
 
 type SettingsTabId = "general" | "monitor" | "data";
@@ -295,6 +298,35 @@ export default function SettingsPage() {
     },
     onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
   });
+  // ===== 桌面宠物(Ink pet)=====
+  const petEnabled = settingsQ.data?.pet?.enabled ?? false;
+  const petThemeId = settingsQ.data?.pet?.theme_id ?? DEFAULT_PET_THEME_ID;
+  const petSize = settingsQ.data?.pet?.size ?? "medium";
+  const petOpacity = settingsQ.data?.pet?.opacity ?? 1;
+  const petAlertSec = settingsQ.data?.pet?.alert_interval_sec ?? 30;
+  // 透明度拖动期间走本地草稿,松手才提交,避免每帧打一次 setAppSettings。
+  const [petOpacityDraft, setPetOpacityDraft] = useState<number | null>(null);
+  const petOpacityValue = petOpacityDraft ?? petOpacity;
+  const petEnableM = useMutation({
+    mutationFn: (enable: boolean) => setAppSettings({ pet_enabled: enable }),
+    onSuccess: (_, enable) => {
+      qc.invalidateQueries({ queryKey: ["app_settings"] });
+      toast.success(enable ? i18n.t("pet.toast.enabled") : i18n.t("pet.toast.disabled"));
+    },
+    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+  });
+  // 主题 / 大小 / 透明度 / 提醒间隔共用一个增量 patch mutation。
+  const petPatchM = useMutation({
+    mutationFn: (patch: AppSettingsPatch) => setAppSettings(patch),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["app_settings"] }),
+    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+  });
+  // 分段按钮统一样式(选中高亮 / 未选中描边)。
+  const segCls = (active: boolean) =>
+    active
+      ? "rounded-md border border-primary bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+      : "rounded-md border border-slate-200 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800";
+
   const resetDaemonSilence = () => {
     clearDaemonSilence();
     window.dispatchEvent(new Event(DAEMON_RESET_EVENT));
@@ -536,6 +568,123 @@ export default function SettingsPage() {
             aria-label="开启 cc-switch 守护"
           />
         </div>
+      </section>
+
+      {/* 桌面宠物 — monitor */}
+      <section className={`${tabClass("monitor")}rounded-lg border border-border bg-card p-4`}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="flex items-center gap-2 text-sm font-medium">
+              <Sparkles className="h-4 w-4 text-slate-500" /> {i18n.t("pet.settings.title")}
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">{i18n.t("pet.settings.hint")}</p>
+          </div>
+          <Switch
+            checked={petEnabled}
+            onCheckedChange={(v) => petEnableM.mutate(v)}
+            disabled={petEnableM.isPending}
+            aria-label={i18n.t("pet.settings.title")}
+          />
+        </div>
+        {petEnabled && (
+          <div className="mt-3 space-y-3 border-t border-border pt-3">
+            {/* 形象主题 */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-foreground">
+                  {i18n.t("pet.settings.themeLabel")}
+                </div>
+                <p className="mt-0.5 text-[11px] text-slate-400">
+                  {i18n.t("pet.settings.themeHint")}
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-end gap-1.5">
+                {PET_THEMES.map((th) => (
+                  <button
+                    key={th.id}
+                    type="button"
+                    onClick={() => petPatchM.mutate({ pet_theme_id: th.id })}
+                    disabled={petPatchM.isPending}
+                    className={`inline-flex items-center gap-1.5 ${segCls(petThemeId === th.id)}`}
+                  >
+                    <img src={th.images.idle} alt="" className="h-4 w-4 object-contain" />
+                    {i18n.t(`pet.settings.themes.${th.id}` as never)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 大小 */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-xs font-medium text-foreground">
+                {i18n.t("pet.settings.sizeLabel")}
+              </div>
+              <div className="flex gap-1.5">
+                {(["small", "medium", "large"] as const).map((sz) => (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => petPatchM.mutate({ pet_size: sz })}
+                    disabled={petPatchM.isPending}
+                    className={segCls(petSize === sz)}
+                  >
+                    {i18n.t(`pet.settings.sizes.${sz}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 透明度 */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-xs font-medium text-foreground">
+                {i18n.t("pet.settings.opacityLabel")}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  step={5}
+                  value={Math.round(petOpacityValue * 100)}
+                  onChange={(e) => setPetOpacityDraft(Number(e.target.value) / 100)}
+                  onMouseUp={() => {
+                    if (petOpacityDraft != null) petPatchM.mutate({ pet_opacity: petOpacityDraft });
+                  }}
+                  onTouchEnd={() => {
+                    if (petOpacityDraft != null) petPatchM.mutate({ pet_opacity: petOpacityDraft });
+                  }}
+                  className="w-32 accent-primary"
+                  aria-label={i18n.t("pet.settings.opacityLabel")}
+                />
+                <span className="w-9 text-right text-xs tabular-nums text-slate-500">
+                  {Math.round(petOpacityValue * 100)}%
+                </span>
+              </div>
+            </div>
+            {/* 醒目提醒间隔 */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-foreground">
+                  {i18n.t("pet.settings.alertLabel")}
+                </div>
+                <p className="mt-0.5 text-[11px] text-slate-400">
+                  {i18n.t("pet.settings.alertHint")}
+                </p>
+              </div>
+              <div className="flex gap-1.5">
+                {[0, 30, 60, 120].map((sec) => (
+                  <button
+                    key={sec}
+                    type="button"
+                    onClick={() => petPatchM.mutate({ pet_alert_interval_sec: sec })}
+                    disabled={petPatchM.isPending}
+                    className={segCls(petAlertSec === sec)}
+                  >
+                    {sec === 0 ? i18n.t("pet.settings.alertOff") : `${sec}s`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 扫描根目录 — data */}

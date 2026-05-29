@@ -6,6 +6,7 @@ import i18n from "./i18n";
 
 import { LowAiShareWatcher } from "./components/LowAiShareWatcher";
 import { DaemonWatcher } from "./components/DaemonWatcher";
+import { InkPetController } from "./components/InkPetController";
 import { Rail } from "./components/Layout/Rail";
 import { RepoSetupGuide } from "./components/RepoSetupGuide";
 import { TopBar } from "./components/Layout/TopBar";
@@ -112,6 +113,7 @@ export default function App() {
       <div key={lang} className="contents">
         <LowAiShareWatcher settings={appSettingsQ.data} onNavigate={navigate} />
         <DaemonWatcher settings={appSettingsQ.data} />
+        <InkPetController settings={appSettingsQ.data} />
         <RepoSetupGuide settings={appSettingsQ.data} onRepoChanged={handleRepoChanged} />
         <div className="flex h-full">
           <Rail current={current} onNavigate={navigate} />

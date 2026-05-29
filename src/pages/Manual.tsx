@@ -81,7 +81,7 @@ export default function ManualPage() {
               }
             >
               <Icon className="h-3.5 w-3.5" />
-              {t(it.labelKey)}
+              {t(it.labelKey as never)}
             </button>
           );
         })}

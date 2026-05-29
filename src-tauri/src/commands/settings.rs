@@ -39,6 +39,18 @@ pub struct AppSettingsPatch {
     /// 通知:git-ai daemon 异常推送 OS 通知的独立总开关。
     pub daemon_unhealthy_alert: Option<bool>,
     pub repo_setup_seen: Option<bool>,
+    /// 桌面宠物:总开关。翻转即时显隐 pet 窗口。
+    pub pet_enabled: Option<bool>,
+    /// 桌面宠物:形象主题 id(robot3d / robotflat / inkbeast)。
+    pub pet_theme_id: Option<String>,
+    /// 桌面宠物:拖拽后记忆的窗口位置(physical x, y)。
+    pub pet_position: Option<(i32, i32)>,
+    /// 桌面宠物:尺寸档位(small / medium / large)。
+    pub pet_size: Option<String>,
+    /// 桌面宠物:整体不透明度 [0.2, 1.0];后端 clamp。
+    pub pet_opacity: Option<f32>,
+    /// 桌面宠物:醒目提醒重复间隔(秒);0 = 不重复。后端 clamp 到 [0, 600]。
+    pub pet_alert_interval_sec: Option<u32>,
 }
 
 #[tauri::command]
@@ -54,6 +66,7 @@ pub async fn set_app_settings(
 ) -> Result<AppSettings, String> {
     let mut s = AppSettings::load();
     let prev_cc_switch = s.notifications.cc_switch_auto_repair;
+    let prev_pet_enabled = s.pet.enabled;
     let prev_low_ai_enabled = s.notifications.low_ai_share.enabled;
     let prev_low_ai_realtime = s
         .notifications
@@ -110,6 +123,31 @@ pub async fn set_app_settings(
     if let Some(b) = patch.repo_setup_seen {
         s.repo_setup_seen = b;
     }
+    if let Some(b) = patch.pet_enabled {
+        s.pet.enabled = b;
+    }
+    if let Some(t) = patch.pet_theme_id {
+        s.pet.theme_id = Some(t);
+    }
+    if let Some(p) = patch.pet_position {
+        s.pet.position = Some(p);
+    }
+    if let Some(sz) = patch.pet_size {
+        match sz.as_str() {
+            "small" | "medium" | "large" => s.pet.size = Some(sz),
+            other => {
+                return Err(format!(
+                    "pet_size 仅接受 'small' / 'medium' / 'large',收到 '{other}'"
+                ))
+            }
+        }
+    }
+    if let Some(o) = patch.pet_opacity {
+        s.pet.opacity = Some(o.clamp(0.2, 1.0));
+    }
+    if let Some(n) = patch.pet_alert_interval_sec {
+        s.pet.alert_interval_sec = Some(n.min(600));
+    }
     s.save().map_err(|e| format!("写入设置失败: {e}"))?;
 
     // cc-switch watcher 即时联动:开关翻转就启/停,无需重启应用。
@@ -134,6 +172,11 @@ pub async fn set_app_settings(
             .ok()
             .and_then(|g| g.as_ref().map(|r| r.path.clone()));
         crate::repo_notes_watcher::apply_state(&app, &state, repo_path.as_deref(), realtime_active);
+    }
+
+    // 桌面宠物窗口显隐联动:仅 enabled 翻转才显 / 隐(主题、位置改变不影响显隐)。
+    if prev_pet_enabled != s.pet.enabled {
+        crate::pet::apply_visibility(&app, s.pet.enabled, s.pet.position);
     }
 
     Ok(s)

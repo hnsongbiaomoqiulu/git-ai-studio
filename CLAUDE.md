@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) and human contributo
 ## 重要文档(动手前先扫一眼)
 
 - [`docs/product/PR-FAQ.md`](docs/product/PR-FAQ.md) —— 产品定位、FAQ、风险。任何砍/留决策的最终依据
-- [`docs/adr/`](docs/adr/) —— 10 个 ADR 锁定的架构决定(router 自研 / shadcn / Tailwind v4 / 不加 zod / CSS 动画 / updater 策略 / 三平台打包 / Conventional Commits / CI matrix / 应用内自更新)
+- [`docs/adr/`](docs/adr/) —— 11 个 ADR 锁定的架构决定(router 自研 / shadcn / Tailwind v4 / 不加 zod / CSS 动画 / updater 策略 / 三平台打包 / Conventional Commits / CI matrix / 应用内自更新 / 桌面宠物)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) —— 贡献流程 / commit 规范 / PR 模板
 - [`README.md`](README.md) / [`README.zh-CN.md`](README.zh-CN.md) —— 对外门面
 
@@ -52,6 +52,8 @@ This file provides guidance to Claude Code (claude.ai/code) and human contributo
 **设置持久化。** `AppSettings` 持久化到 `~/.git-ai-studio/config.json`,带就地迁移路径;patch API(`commands/settings.rs`)刻意扁平,而存储结构是嵌套的。OS 集成态(如开机自启)实时读 OS,不在 config 里另存一份。
 
 **应用内自更新(默认开)。** `tauri-plugin-updater` + `tauri-plugin-process`,启动约 1s 自动查 GitHub `latest.json`(仅版本号),有新版在关于页 / TopBar Badge 提示,一键 `downloadAndInstall` + relaunch;minisign 验签;关:`plugins.updater.active=false`。见 ADR-010(supersedes ADR-006)。
+
+**桌面宠物(Ink pet,opt-in,默认关)。** 可选的常驻悬浮伴侣,把 git-ai 归因健康呈现在桌面角落,详见 ADR-011。**"形象即数据"是唯一不可破坏的不变量**:墨团双色配比 = 实时 AI 率,紫墨(AI)恒在外圈/上方、蓝墨(你)恒在内核/下方(颜色+空间双重编码,色盲可读)。**信息层(色→数据映射)锁死,审美层(配色/质感/主题)开放**:主题只填 `inkAI`/`inkYou` 两个色槽,renderer 只认这两槽 —— **绝不允许自定义改写"哪个色代表谁"**(一旦可改就退化成普通换肤宠物,护城河没了)。**单向数据流**:主窗 `PetController`(挂 App 顶层,复用现有 watcher 的 react-query 数据)跑纯函数 `decidePetState` → `emit` `git-ai-studio://pet-state` → pet 窗(第二个 transparent `WebviewWindow`)纯渲染,**不重复轮询 git-ai**。**发声白名单**:7 状态里只有 `daemon_unhealthy` 可发 OS 通知(复用 `DaemonWatcher` 防抖),其余只靠墨形态 + hover 气泡(克制即尊重);打标失败显示为"未融溅墨",绝不粉饰(响亮失败)。v1:Canvas2D 程序化绘制 + 3 套内置主题常量(黛山/玄/晴),**不做**选择性点击穿透(`setIgnoreCursorEvents` 全窗 bool,见 ADR-011)、**不做**主题文件加载(推 v1.x/v2)。v1.x/v2 路线:选择性点击穿透(按平台能力探测) / Perlin 流体扩散 / 双色微调(带对比度护栏) / 用户主题文件(信息层仍锁死,皮肤只定义外观不定义映射)。`decidePetState` 必须是纯函数 + 单测(仿 `decideDaemonNotification`/`decideLowAiShareNotifier`)。
 
 ## 约定
 

@@ -20,6 +20,7 @@ pub mod git_ai;
 pub mod hooks;
 pub mod installer;
 pub mod paths;
+pub mod pet;
 pub mod proc;
 pub mod repo;
 pub mod repo_notes_watcher;
@@ -113,20 +114,27 @@ pub fn run() {
             cc_switch_watcher::restore_on_startup(&app.handle().clone(), &state);
             // 同样恢复 refs/notes/ai 实时 watcher(用户开了低 AI 提醒 + realtime 时)
             repo_notes_watcher::restore_on_startup(&app.handle().clone(), &state);
+            // 桌面宠物:用户上次开过就恢复显示(被动,不弹通知)。详见 ADR-011。
+            pet::restore_on_startup(&app.handle().clone());
 
             Ok(())
         })
         .on_window_event(|window, event| {
-            // 主窗口被关闭(用户点 X / Alt+F4)时,按 Settings.close_behavior 决定行为:
-            //   - "exit":默认,允许关闭 → 进程退出
-            //   - "tray":拦截关闭 → hide(),用户从托盘恢复
-            if window.label() != "main" {
-                return;
-            }
+            // 窗口关闭事件按 label 分流:
+            //   - main:按 Settings.close_behavior 决定 "exit"(默认,进程退出)或 "tray"(拦截 → hide)
+            //   - pet:永远拦截 close 改为 hide,重新开启宠物时即时复用,不重建窗口(见 ADR-011)
             if let WindowEvent::CloseRequested { api, .. } = event {
-                if current_close_behavior() == CloseBehavior::Tray {
-                    api.prevent_close();
-                    let _ = window.hide();
+                match window.label() {
+                    // main + exit 模式、以及其它 label 都落到 `_`,不拦截 → 走默认关闭
+                    "main" if current_close_behavior() == CloseBehavior::Tray => {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
+                    "pet" => {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
+                    _ => {}
                 }
             }
         })

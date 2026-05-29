@@ -18,6 +18,7 @@ production precedents that informed the call.
 | 008 | [Conventional Commits and release-automation tool](./0008-conventional-commits-release-tool.md) | **Accepted (Option D)** | 2026-05-27 |
 | 009 | [CI configuration strategy](./0009-ci-configuration.md) | Proposed (awaiting review) | 2026-05-27 |
 | 010 | [In-app auto-update](./0010-in-app-auto-update.md) | **Accepted (supersedes 006)** | 2026-05-29 |
+| 011 | [Desktop companion (Ink pet)](./0011-desktop-companion-ink-pet.md) | **Accepted** | 2026-05-29 |
 
 ## Guiding principles
 

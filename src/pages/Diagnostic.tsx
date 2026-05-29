@@ -32,14 +32,8 @@ import {
 } from "../lib/api";
 import { notify } from "../lib/osNotify";
 import { cn } from "../lib/cn";
-import {
-  DAEMON_BLOCKED_LOCK,
-  DAEMON_STALE_LOCK,
-  MSG,
-  QUICK_FIX_CATALOG_COPY,
-  buildCheckList,
-  buildOverviewChips,
-} from "../lib/copy";
+import { DAEMON_BLOCKED_LOCK, DAEMON_STALE_LOCK, MSG, QUICK_FIX_CATALOG_COPY } from "../lib/copy";
+import { buildCheckList, buildOverviewChips } from "../lib/diagnosticChecks";
 import { evaluateQuickFixes, type QuickFixEntry } from "../lib/quickFixCatalog";
 import type {
   AgentHookStatus,

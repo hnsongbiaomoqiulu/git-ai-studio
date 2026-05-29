@@ -7,6 +7,8 @@ import { Toaster } from "sonner";
 import "./i18n";
 
 import App from "./App";
+import { InkPetWindow } from "./components/InkPetWindow";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { RouterProvider } from "./router";
 import { UpdateProvider } from "./contexts/UpdateContext";
 import "./App.css";
@@ -21,17 +23,44 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider>
-        {/* UpdateProvider 放在 RouterProvider 内、App 外:App 顶层用 key={lang} 在切语言时
-            重挂子树,Provider 放外面才不会丢失更新状态或重复触发启动检查。 */}
-        <UpdateProvider>
-          <App />
-        </UpdateProvider>
-        <Toaster richColors closeButton position="bottom-right" toastOptions={{ duration: 3500 }} />
-      </RouterProvider>
-    </QueryClientProvider>
-  </React.StrictMode>,
-);
+// pet 窗口与主窗口共用这一份 bundle,按窗口 label 分流渲染:
+//   - "pet":只挂极简墨团(纯 listen + Canvas),不需要 QueryClient / Router / Updater
+//   - 其它(main):完整应用
+// 纯浏览器(pnpm dev,无 Tauri shell)读不到 label,退回主窗口视图。
+function currentWindowLabel(): string {
+  try {
+    return getCurrentWindow().label;
+  } catch {
+    return "main";
+  }
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+
+if (currentWindowLabel() === "pet") {
+  root.render(
+    <React.StrictMode>
+      <InkPetWindow />
+    </React.StrictMode>,
+  );
+} else {
+  root.render(
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider>
+          {/* UpdateProvider 放在 RouterProvider 内、App 外:App 顶层用 key={lang} 在切语言时
+              重挂子树,Provider 放外面才不会丢失更新状态或重复触发启动检查。 */}
+          <UpdateProvider>
+            <App />
+          </UpdateProvider>
+          <Toaster
+            richColors
+            closeButton
+            position="bottom-right"
+            toastOptions={{ duration: 3500 }}
+          />
+        </RouterProvider>
+      </QueryClientProvider>
+    </React.StrictMode>,
+  );
+}

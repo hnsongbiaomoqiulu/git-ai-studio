@@ -903,5 +903,51 @@
     "upToDate": "You're on the latest version",
     "checkFailed": "Failed to check for updates",
     "installFailed": "Failed to download or install the update"
+  },
+  "pet": {
+    "settings": {
+      "title": "Desktop pet",
+      "hint": "A little companion in the corner of your screen. A two-tone ring on its body reflects your live AI code share (purple = AI, blue = you), and it tints, shakes, and pops a message when the hook is missing, a commit fails to tag, the daemon gets stuck, and so on. Off by default, removable anytime, and it changes nothing else.",
+      "themeLabel": "Character",
+      "themeHint": "Switch the character; the data layer (purple = AI, blue = you) never changes.",
+      "themes": {
+        "robot3d": "3D Robot",
+        "robotflat": "Flat Robot",
+        "inkbeast": "Ink Spirit"
+      },
+      "sizeLabel": "Size",
+      "sizes": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      },
+      "opacityLabel": "Opacity",
+      "alertLabel": "Prominent alerts",
+      "alertHint": "On problems the whole pet tints, shakes, and pops a message; set the repeat interval.",
+      "alertOff": "Off"
+    },
+    "states": {
+      "ok": "All good",
+      "attributing": "Recording attribution…",
+      "attributionFailed": "Last commit failed to tag",
+      "daemonUnhealthy": "git-ai daemon is stuck",
+      "hookMissing": "Hook not configured — edits won't be attributed",
+      "lowAiShare": "AI share is low",
+      "sleeping": "Resting",
+      "unknown": "Reading attribution…"
+    },
+    "bubble": {
+      "noData": "AI —",
+      "urgentHint": "Double-click to diagnose"
+    },
+    "menu": {
+      "openMain": "Show main window",
+      "cycleTheme": "Switch character",
+      "hide": "Hide pet"
+    },
+    "toast": {
+      "enabled": "Desktop pet enabled",
+      "disabled": "Desktop pet disabled"
+    }
   }
 }

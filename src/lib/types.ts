@@ -208,8 +208,25 @@ export interface AppSettings {
   /** 通知与守护类配置子结构。 */
   notifications: NotificationsConfig;
   repo_setup_seen: boolean;
+  /** 桌面宠物配置(opt-in,默认关)。详见 ADR-011。 */
+  pet: PetConfig;
   /** **已废弃**:历史顶层位置,后端 load 时迁移到 notifications.cc_switch_auto_repair。 */
   cc_switch_auto_repair?: boolean | null;
+}
+
+/** 桌面宠物配置。对齐 src-tauri/src/state.rs::PetConfig。 */
+export interface PetConfig {
+  enabled: boolean;
+  /** 形象主题 id(robot3d / robotflat / inkbeast);null = 前端默认 "robot3d"。 */
+  theme_id: string | null;
+  /** 拖拽记忆的窗口位置 [physical x, y];null = 用默认位置。 */
+  position: [number, number] | null;
+  /** 尺寸档位;null = 前端默认 "medium"。 */
+  size: "small" | "medium" | "large" | null;
+  /** 整体不透明度 [0.2, 1];null = 前端默认 1。 */
+  opacity: number | null;
+  /** 醒目提醒重复间隔(秒);0 = 不重复;null = 前端默认 30。 */
+  alert_interval_sec: number | null;
 }
 
 /**
@@ -237,6 +254,18 @@ export interface AppSettingsPatch {
   /** git-ai daemon 异常推送 OS 通知的独立总开关。 */
   daemon_unhealthy_alert?: boolean;
   repo_setup_seen?: boolean;
+  /** 桌面宠物:总开关(翻转即时显隐 pet 窗口)。 */
+  pet_enabled?: boolean;
+  /** 桌面宠物:形象主题 id(robot3d / robotflat / inkbeast)。 */
+  pet_theme_id?: string;
+  /** 桌面宠物:拖拽后记忆的窗口位置 [physical x, y]。 */
+  pet_position?: [number, number];
+  /** 桌面宠物:尺寸档位(small / medium / large)。 */
+  pet_size?: "small" | "medium" | "large";
+  /** 桌面宠物:整体不透明度 [0.2, 1];后端 clamp。 */
+  pet_opacity?: number;
+  /** 桌面宠物:醒目提醒重复间隔(秒);0 = 不重复;后端 clamp 到 [0, 600]。 */
+  pet_alert_interval_sec?: number;
 }
 
 // ===== Hooks =====
