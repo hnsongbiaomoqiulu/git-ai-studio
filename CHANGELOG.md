@@ -8,6 +8,14 @@ Version bumps are manual — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing-a-n
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-29
+
+### Added
+
+- Desktop companion ("Ink pet") — an opt-in (default off), always-on-top floating widget that renders your live AI-authorship rate as a two-tone ink ball: purple ink (AI) on the outer ring, blue ink (you) at the core, so the shape *is* the data (color + position dual-encoded, colorblind-readable). Ships 3 built-in themes and a hover bubble; only the daemon-unhealthy state may raise an OS notification. See [ADR-011](docs/adr/0011-desktop-companion-ink-pet.md).
+
+## [0.1.0] - 2026-05-29
+
 ### Added
 
 - Initial open-source release: a local desktop dashboard for AI code authorship, built on top of the [`git-ai`](https://github.com/git-ai-project/git-ai) CLI.
@@ -27,4 +35,6 @@ Version bumps are manual — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing-a-n
 - Self-hosted hook server (Windows scheduled task + VBS shim + Node HTTP server). Hooks now go exclusively through the official `git ai install-hooks`.
 - Feishu webhook push (replaced by OS-native notifications).
 
-[Unreleased]: https://github.com/git-ai-project/git-ai-studio/commits/main
+[Unreleased]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/bujueyunjian/git-ai-studio/releases/tag/v0.1.0
