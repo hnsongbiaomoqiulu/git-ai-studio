@@ -15,8 +15,6 @@ import {
   ShieldCheck,
   Sparkles,
   Sun,
-  Upload,
-  UserCircle2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
@@ -27,18 +25,13 @@ import { ALREADY_CHECKING, useUpdate } from "../contexts/UpdateContext";
 import { relaunchApp, type UpdateProgressEvent } from "../lib/updater";
 import { RadioGroup, RadioItem } from "../components/ui/RadioGroupBar";
 import { Switch } from "../components/ui/SwitchToggle";
-import { Dialog } from "../components/ui/DialogShell";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/PopoverPanel";
 import {
-  exportAppSettings,
   currentGitUserEmail,
   getAppSettings,
   getAutoLaunchStatus,
   getGitAiConfig,
-  getWhoami,
-  importAppSettings,
   listEffectiveIgnorePatterns,
-  logoutGitAi,
   setAppSettings,
   setAutoLaunch,
 } from "../lib/api";
@@ -67,13 +60,7 @@ import {
   clearLowAiShareSilence,
   normalizeLowAiShareTargetEmails,
 } from "../lib/lowAiShareNotifier";
-import type {
-  AppSettingsPatch,
-  AuthState,
-  CloseBehavior,
-  EffectiveIgnorePatternsResult,
-  WhoamiResult,
-} from "../lib/types";
+import type { AppSettingsPatch, CloseBehavior, EffectiveIgnorePatternsResult } from "../lib/types";
 import { DEFAULT_PET_THEME_ID, PET_THEMES } from "../lib/petState";
 import { useRouter } from "../router";
 
@@ -345,30 +332,6 @@ export default function SettingsPage() {
     window.dispatchEvent(new Event(LOW_AI_SHARE_RESET_EVENT));
     toast.success("已恢复低 AI 占比提醒");
   };
-
-  async function handleExport() {
-    try {
-      const json = await exportAppSettings();
-      await navigator.clipboard.writeText(json);
-      toast.success("配置 JSON 已复制到剪贴板");
-    } catch (e) {
-      toast.error("导出失败", { description: (e as Error).message });
-    }
-  }
-
-  async function handleImport() {
-    const text = window.prompt("粘贴配置 JSON 文本:");
-    if (!text) return;
-    try {
-      await importAppSettings(text);
-      qc.invalidateQueries({ queryKey: ["app_settings"] });
-      qc.invalidateQueries({ queryKey: ["scan_roots"] });
-      qc.invalidateQueries({ queryKey: ["recent_repos"] });
-      toast.success("配置已导入");
-    } catch (e) {
-      toast.error("导入失败,请检查 JSON 格式", { description: (e as Error).message });
-    }
-  }
 
   const autoUpdateEnabled = !(cfgQ.data?.disable_auto_updates ?? false);
 
@@ -720,11 +683,6 @@ export default function SettingsPage() {
         </ul>
       </section>
 
-      {/* git-ai 账号 / 登录态 — data */}
-      <div className={tabClass("data") || undefined}>
-        <GitAiAccountCard />
-      </div>
-
       {/* 当前生效的 ignore patterns — data */}
       <div className={tabClass("data") || undefined}>
         <EffectiveIgnoreCard />
@@ -888,8 +846,9 @@ export default function SettingsPage() {
                   className="min-h-20 resize-y rounded-md border border-slate-200 px-2 py-1.5 font-mono text-xs dark:border-border dark:bg-card"
                 />
               </div>
-              <div className="grid gap-3 rounded-md border border-border p-3 md:grid-cols-2">
-                <NumberSetting
+              {/* 间隔/静默统一为 chip+自定义(对齐上方阈值),与「测试 / 重新开启」收进一个盒子。 */}
+              <div className="grid gap-3 rounded-md border border-border p-3">
+                <ChipPicker
                   label={t("lowAiShare.remindIntervalLabel")}
                   value={lowAiRemindInterval}
                   min={LOW_AI_SHARE_MIN_REMIND_INTERVAL_MINUTES}
@@ -897,13 +856,13 @@ export default function SettingsPage() {
                   onSave={saveRemindInterval}
                   disabled={lowAiRemindIntervalM.isPending}
                   presets={[
-                    ["15 分钟", 15],
-                    ["1 小时", 60],
-                    ["6 小时", 360],
-                    ["24 小时", 1440],
+                    [t("lowAiShare.dur15min"), 15],
+                    [t("lowAiShare.dur1hr"), 60],
+                    [t("lowAiShare.dur6hr"), 360],
+                    [t("lowAiShare.dur24hr"), 1440],
                   ]}
                 />
-                <NumberSetting
+                <ChipPicker
                   label={t("lowAiShare.dismissMinutesLabel")}
                   value={lowAiDismissMinutes}
                   min={LOW_AI_SHARE_MIN_DISMISS_MINUTES}
@@ -911,26 +870,26 @@ export default function SettingsPage() {
                   onSave={saveDismissMinutes}
                   disabled={lowAiDismissMinutesM.isPending}
                   presets={[
-                    ["1 小时", 60],
-                    ["6 小时", 360],
-                    ["24 小时", 1440],
-                    ["7 天", 10080],
+                    [t("lowAiShare.dur1hr"), 60],
+                    [t("lowAiShare.dur6hr"), 360],
+                    [t("lowAiShare.dur24hr"), 1440],
+                    [t("lowAiShare.dur7day"), 10080],
                   ]}
                 />
-              </div>
-              <div className="flex flex-wrap justify-end gap-2">
-                <button
-                  onClick={resetLowAiSilence}
-                  className="rounded-md border border-slate-200 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
-                >
-                  重新开启提醒
-                </button>
-                <button
-                  onClick={handleTestLowAiToast}
-                  className="rounded-md border border-slate-200 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
-                >
-                  测试一下
-                </button>
+                <div className="flex items-center justify-between gap-2 border-t border-border pt-2.5">
+                  <button
+                    onClick={handleTestLowAiToast}
+                    className="rounded-md border border-slate-200 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
+                  >
+                    {t("lowAiShare.testReminder")}
+                  </button>
+                  <button
+                    onClick={resetLowAiSilence}
+                    className="text-xs text-slate-500 hover:text-foreground hover:underline"
+                  >
+                    {t("lowAiShare.resetReminder")}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -982,28 +941,6 @@ export default function SettingsPage() {
             前往修改 →
           </button>
         </div>
-      </section>
-
-      {/* 导入 / 导出 — data */}
-      <section className={`${tabClass("data")}rounded-lg border border-border bg-card p-4`}>
-        <h2 className="mb-2 text-sm font-medium">配置导入 / 导出</h2>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleExport}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
-          >
-            <Download className="h-3.5 w-3.5" /> 复制配置 JSON
-          </button>
-          <button
-            onClick={handleImport}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
-          >
-            <Upload className="h-3.5 w-3.5" /> 从 JSON 导入
-          </button>
-        </div>
-        <p className="mt-1.5 text-[11px] text-slate-400">
-          导入会覆盖 ~/.git-ai-studio/config.json 全部字段,请谨慎。
-        </p>
       </section>
 
       {/* 首次引导 — general */}
@@ -1084,259 +1021,100 @@ export default function SettingsPage() {
   );
 }
 
-// ============ P11-D git-ai 账号卡 ============
-
-function GitAiAccountCard() {
-  const { t } = useTranslation();
-  const qc = useQueryClient();
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  /** 将登录态枚举映射为显示文本 + 色调。t 从外层组件传入,确保语言切换后重渲染。 */
-  function stateLabel(s: AuthState): { text: string; tone: "ok" | "warn" | "err" | "muted" } {
-    switch (s.kind) {
-      case "logged_in":
-        return { text: t("gitAiAccount.stateLoggedIn"), tone: "ok" };
-      case "logged_out":
-        return { text: t("gitAiAccount.stateLoggedOut"), tone: "muted" };
-      case "refresh_expired":
-        return { text: t("gitAiAccount.stateRefreshExpired"), tone: "warn" };
-      case "error":
-        return { text: `${t("gitAiAccount.stateError")}: ${s.message}`, tone: "err" };
-    }
-  }
-  const whoamiQ = useQuery<WhoamiResult>({
-    queryKey: ["whoami"],
-    queryFn: getWhoami,
-    staleTime: 60_000,
-  });
-  const logoutM = useMutation({
-    mutationFn: () => logoutGitAi(),
-    onSuccess: () => {
-      setConfirmOpen(false);
-      toast.success(t("gitAiAccount.logoutOkToast"));
-      qc.invalidateQueries({ queryKey: ["whoami"] });
-      qc.invalidateQueries({ queryKey: ["diagnose_environment"] });
-    },
-    onError: (e) =>
-      toast.error(t("gitAiAccount.logoutFailed"), { description: (e as Error).message }),
-  });
-
-  const data = whoamiQ.data;
-  const payload = data?.status === "ok" ? data.payload : null;
-  const label = payload ? stateLabel(payload.state) : null;
-  const loggedIn = payload?.state.kind === "logged_in";
-
-  const toneClass = (tone: "ok" | "warn" | "err" | "muted") =>
-    tone === "ok"
-      ? "text-emerald-600 dark:text-emerald-400"
-      : tone === "warn"
-        ? "text-amber-600 dark:text-amber-400"
-        : tone === "err"
-          ? "text-rose-600 dark:text-rose-400"
-          : "text-slate-500";
-
-  return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-sm font-medium">
-          <UserCircle2 className="h-4 w-4 text-slate-500" /> {t("gitAiAccount.title")}
-        </h2>
-        <button
-          type="button"
-          onClick={() => whoamiQ.refetch()}
-          disabled={whoamiQ.isFetching}
-          className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-0.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:border-border dark:hover:bg-slate-800"
-        >
-          <RefreshCw className={`h-3 w-3 ${whoamiQ.isFetching ? "animate-spin" : ""}`} />
-          {whoamiQ.isFetching ? t("gitAiAccount.refreshing") : t("gitAiAccount.refresh")}
-        </button>
-      </div>
-      <p className="mt-1 text-[11px] text-slate-500">{t("gitAiAccount.hint")}</p>
-
-      {data?.status === "degraded" && (
-        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-          {t("gitAiAccount.degradedGitAiMissing")}
-        </p>
-      )}
-
-      {whoamiQ.isError && (
-        <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">
-          {(whoamiQ.error as Error).message}
-        </p>
-      )}
-
-      {payload && label && (
-        <div className="mt-3 grid grid-cols-1 gap-1.5 text-xs sm:grid-cols-2">
-          <Field label="状态" value={<span className={toneClass(label.tone)}>{label.text}</span>} />
-          <Field label="API" value={<span className="font-mono">{payload.api_base_url}</span>} />
-          {payload.email && <Field label="Email" value={payload.email} />}
-          {payload.name && <Field label="Name" value={payload.name} />}
-          {payload.user_id && (
-            <Field label="User ID" value={<span className="font-mono">{payload.user_id}</span>} />
-          )}
-          {payload.api_key_masked && (
-            <Field
-              label="API key"
-              value={<span className="font-mono">{payload.api_key_masked}</span>}
-            />
-          )}
-          {payload.access_token_expires_at && (
-            <Field label="Token 到期" value={payload.access_token_expires_at} />
-          )}
-          {payload.orgs.length > 0 && (
-            <div className="sm:col-span-2">
-              <div className="mb-1 text-[11px] text-slate-500">组织</div>
-              <ul className="space-y-0.5 text-[11px]">
-                {payload.orgs.map((o, i) => (
-                  <li
-                    key={`${o.org_id ?? "x"}-${i}`}
-                    className="font-mono text-slate-600 dark:text-slate-400"
-                  >
-                    {o.org_slug ?? "—"} ({o.org_name ?? "—"}) · role={o.role ?? "—"}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="mt-3 flex items-center gap-3">
-        {loggedIn ? (
-          <button
-            type="button"
-            onClick={() => setConfirmOpen(true)}
-            disabled={logoutM.isPending}
-            className="inline-flex items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/40"
-          >
-            {logoutM.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-            <LogOut className="h-3 w-3" />
-            {t("gitAiAccount.logoutButton")}
-          </button>
-        ) : payload && payload.state.kind !== "logged_in" ? (
-          <p className="text-[11px] text-slate-500">{t("gitAiAccount.cliLoginHint")}</p>
-        ) : null}
-      </div>
-
-      <Dialog
-        open={confirmOpen}
-        onOpenChange={(v) => !logoutM.isPending && setConfirmOpen(v)}
-        title={t("gitAiAccount.logoutConfirmTitle")}
-        description={t("gitAiAccount.logoutConfirmDescription")}
-        dismissible={!logoutM.isPending}
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setConfirmOpen(false)}
-              disabled={logoutM.isPending}
-              className="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 disabled:opacity-50 dark:border-border dark:hover:bg-slate-800"
-            >
-              {t("gitAiAccount.logoutCancel")}
-            </button>
-            <button
-              type="button"
-              onClick={() => logoutM.mutate()}
-              disabled={logoutM.isPending}
-              className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-50"
-            >
-              {logoutM.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              {t("gitAiAccount.logoutConfirmCta")}
-            </button>
-          </>
-        }
-      >
-        {/* 内容已经在 description 里;Dialog 主体留空以减少视觉噪声 */}
-      </Dialog>
-    </section>
-  );
-}
-
-function Field({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-2">
-      <span className="text-slate-500">{label}</span>
-      <span className="truncate text-right">{value}</span>
-    </div>
-  );
-}
-
-function NumberSetting({
+/** 分钟数值设置:一排预设 chip + 自定义展开输入,与上方阈值选择器同款交互。
+ *  点预设即存;点"自定义"展开数字框,回车 / 保存提交。统一守护与通知页的数值设置体验。 */
+function ChipPicker({
   label,
   value,
+  presets,
   min,
   max,
-  presets,
   disabled,
   onSave,
-  unit = "分钟",
 }: {
   label: string;
   value: number;
+  presets: Array<[string, number]>;
   min: number;
   max: number;
-  presets: Array<[string, number]>;
   disabled: boolean;
   onSave: (value: number) => void;
-  /** 单位文案,默认"分钟"。新接入的 hook-server 配置传 "毫秒" / "次"。 */
-  unit?: string;
 }) {
+  const { t } = useTranslation();
+  const matchesPreset = (v: number) => presets.some(([, m]) => m === v);
+  const [customOpen, setCustomOpen] = useState(!matchesPreset(value));
   const [draft, setDraft] = useState(String(value));
+  // 外部值变化(切换、后端回写)时同步:命中预设则收起自定义,否则保持展开。
   useEffect(() => {
     setDraft(String(value));
+    setCustomOpen(!matchesPreset(value));
+    // presets 为稳定常量,无需进依赖
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const commit = () => {
     const n = Math.round(Number(draft));
     if (!Number.isFinite(n) || n < min || n > max) {
-      toast.error(`${label}需为 ${min}–${max} ${unit}`);
+      toast.error(t("lowAiShare.minutesRangeError", { label, min, max }));
       return;
     }
     onSave(n);
   };
 
+  const chipOn =
+    "rounded-md border border-primary bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:bg-primary/10 dark:text-primary";
+  const chipOff =
+    "rounded-md border border-slate-200 px-2.5 py-1 text-xs hover:bg-slate-50 disabled:opacity-50 dark:border-border dark:hover:bg-slate-800";
+
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <label className="text-xs font-medium text-foreground">{label}</label>
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            min={min}
-            max={max}
-            step={1}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commit();
-            }}
-            className="w-20 rounded-md border border-slate-200 px-2 py-1 text-xs dark:border-border dark:bg-card"
-          />
-          <span className="text-xs text-slate-500">{unit}</span>
-          <button
-            onClick={commit}
-            disabled={disabled}
-            className="rounded-md border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-50 dark:border-border dark:hover:bg-slate-800"
-          >
-            保存
-          </button>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {presets.map(([text, minutes]) => (
-          <button
-            key={`${label}-${minutes}`}
-            onClick={() => onSave(minutes)}
-            disabled={disabled}
-            className={
-              value === minutes
-                ? "rounded-md border border-primary bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary dark:bg-primary/10 dark:text-primary"
-                : "rounded-md border border-slate-200 px-2 py-0.5 text-[11px] hover:bg-slate-50 disabled:opacity-50 dark:border-border dark:hover:bg-slate-800"
-            }
-          >
-            {text}
-          </button>
-        ))}
+    <div className="flex items-center justify-between gap-3">
+      <label className="text-xs text-slate-500">{label}</label>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {presets.map(([text, minutes]) => {
+          const active = !customOpen && value === minutes;
+          return (
+            <button
+              key={minutes}
+              onClick={() => {
+                setCustomOpen(false);
+                onSave(minutes);
+              }}
+              disabled={disabled}
+              className={active ? chipOn : chipOff}
+            >
+              {text}
+            </button>
+          );
+        })}
+        <button
+          onClick={() => {
+            setDraft(String(value));
+            setCustomOpen(true);
+          }}
+          disabled={disabled}
+          className={customOpen ? chipOn : chipOff}
+        >
+          {t("lowAiShare.custom")}
+        </button>
+        {customOpen && (
+          <span className="flex items-center gap-1">
+            <input
+              type="number"
+              min={min}
+              max={max}
+              step={1}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commit();
+              }}
+              className="w-20 rounded-md border border-slate-200 px-2 py-1 text-xs dark:border-border dark:bg-card"
+            />
+            <button onClick={commit} disabled={disabled} className={chipOn}>
+              {t("lowAiShare.save")}
+            </button>
+          </span>
+        )}
       </div>
     </div>
   );
@@ -1358,6 +1136,24 @@ function EffectiveIgnoreCard() {
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-medium">
           <Filter className="h-4 w-4 text-slate-500" /> {t("effectiveIgnore.title")}
+          {/* 作用说明收进点击 ⓘ(同 People / 低 AI 规则),不再常驻为标题下灰字。 */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label={t("effectiveIgnore.title")}
+                aria-haspopup="dialog"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-96">
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                {t("effectiveIgnore.hint")}
+              </p>
+            </PopoverContent>
+          </Popover>
         </h2>
         <button
           type="button"
@@ -1369,7 +1165,6 @@ function EffectiveIgnoreCard() {
           {q.isFetching ? t("effectiveIgnore.refreshing") : t("effectiveIgnore.refresh")}
         </button>
       </div>
-      <p className="mt-1 text-[11px] text-slate-500">{t("effectiveIgnore.hint")}</p>
 
       {q.data?.status === "degraded" && (
         <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">

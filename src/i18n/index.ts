@@ -4,7 +4,7 @@
 // 1. **扁平 key + dot path 命名规范**:`namespace.subgroup.leafKey`(嵌套 ≤ 3 层)。
 //    顶级命名空间按 copy.ts 既有分组对齐:install / hooks / stats / dashboard /
 //    blame / notes / checkpoints / logs / people / diagnostic / settings / manual / formula /
-//    timeRange / gitAiAccount / effectiveIgnore / chart / lowAiShare / quickFixCatalog /
+//    timeRange / effectiveIgnore / chart / lowAiShare / quickFixCatalog /
 //    daemon / workingDir / showRaw / changedFiles / authorsJumpBlame / common。
 //
 // 2. **添加新文案流程**:同时改 `locales/zh-CN.json` 与 `locales/en.json`,两边 key 必须一一对应。

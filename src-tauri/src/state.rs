@@ -256,7 +256,7 @@ impl AppSettings {
         s
     }
 
-    /// 把旧顶层字段迁移到新嵌套位置。`load()` 与 `import_app_settings` 都走它。
+    /// 把旧顶层字段迁移到新嵌套位置。`load()` 启动时走它。
     pub fn migrate_in_place(s: &mut Self) {
         if let Some(legacy) = s.cc_switch_auto_repair.take() {
             log::info!(

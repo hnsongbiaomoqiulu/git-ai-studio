@@ -205,33 +205,6 @@ pub async fn set_auto_launch(enabled: bool) -> Result<bool, String> {
     Ok(enabled)
 }
 
-#[tauri::command]
-pub async fn export_app_settings() -> Result<String, String> {
-    let s = AppSettings::load();
-    serde_json::to_string_pretty(&s).map_err(|e| format!("序列化失败: {e}"))
-}
-
-#[tauri::command]
-pub async fn import_app_settings(
-    app: AppHandle,
-    state: State<'_, AppState>,
-    json: String,
-) -> Result<AppSettings, String> {
-    let prev_cc_switch = AppSettings::load().notifications.cc_switch_auto_repair;
-    let mut parsed: AppSettings =
-        serde_json::from_str(&json).map_err(|e| format!("JSON 解析失败: {e}"))?;
-    // 导入路径同样要走迁移:用户手贴的 JSON 可能是旧版导出。
-    AppSettings::migrate_in_place(&mut parsed);
-    parsed.save().map_err(|e| format!("写入设置失败: {e}"))?;
-
-    let now_cc_switch = parsed.notifications.cc_switch_auto_repair;
-    if prev_cc_switch != now_cc_switch {
-        crate::cc_switch_watcher::apply_enabled(&app, &state, now_cc_switch);
-    }
-
-    Ok(parsed)
-}
-
 fn normalize_email_list(emails: Vec<String>) -> Vec<String> {
     let mut out: Vec<String> = emails
         .into_iter()

@@ -37,7 +37,6 @@ use crate::error::{AppError, Result};
 use crate::proc::run_capture_with_timeout;
 
 const WHOAMI_TIMEOUT: Duration = Duration::from_secs(10);
-const LOGOUT_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// `<unavailable>` 字面值识别为 None。
 const UNAVAILABLE_LITERAL: &str = "<unavailable>";
@@ -87,18 +86,6 @@ pub async fn run_whoami(git_ai: &Path) -> Result<WhoamiPayload> {
     // 注意:上游 whoami 在 logged_out / refresh_expired / error 且无 api_key 时 exit 1,
     // 但 stdout 仍含完整可解析内容。所以这里**不**用 exit 码判定成功 — 解析成功即可。
     parse_whoami(&out.stdout)
-}
-
-/// 调 `git-ai logout`,失败透传 stderr。
-pub async fn run_logout(git_ai: &Path) -> Result<()> {
-    let out = run_capture_with_timeout(git_ai, &["logout"], None, LOGOUT_TIMEOUT).await?;
-    if out.status != 0 {
-        return Err(AppError::GitAiFailed {
-            code: out.status,
-            stderr: out.stderr.trim().to_string(),
-        });
-    }
-    Ok(())
 }
 
 /// 把 `<unavailable>` 与 `<none>` 与空串归一为 None。

@@ -214,8 +214,8 @@ export const runGitAiDebugReport = (jobId: string) =>
 export const openLogDir = (kind: LogKind) => call<void>("open_log_dir", { kind });
 
 // Auth / Show raw(P11-D)
+// get_whoami 仍由诊断页 quickFix「whoami-error」规则使用(登录态作为诊断项,非登录 UI)。
 export const getWhoami = () => call<WhoamiResult>("get_whoami");
-export const logoutGitAi = () => call<void>("logout_git_ai");
 export const getShowRaw = (sha: string) => call<ShowRawResult>("get_show_raw", { sha });
 
 // Branches(E4/E5)
@@ -230,9 +230,6 @@ export const listEffectiveIgnorePatterns = () =>
 export const getAppSettings = () => call<AppSettings>("get_app_settings");
 export const setAppSettings = (patch: AppSettingsPatch) =>
   call<AppSettings>("set_app_settings", { patch });
-export const exportAppSettings = () => call<string>("export_app_settings");
-export const importAppSettings = (json: string) =>
-  call<AppSettings>("import_app_settings", { json });
 
 // 应用「开机自启」:真源为操作系统登录项,非 app config(不落 config.json)。
 export const getAutoLaunchStatus = () => call<boolean>("get_auto_launch_status");
