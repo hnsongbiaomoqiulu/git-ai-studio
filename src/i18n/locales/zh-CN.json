@@ -698,7 +698,80 @@
     "tabs": {
       "commands": "git-ai 命令",
       "metrics": "指标口径",
+      "attribution": "归因覆盖",
       "troubleshooting": "问题排查"
+    },
+    "attribution": {
+      "hint": "常见 git 操作能否被 AI 归因采集到、原分支是否保留归因。git-ai 通过「git 代理 + 后台 daemon + git trace2 + reflog」捕获 git 操作(已不用 git 自带钩子),并在 amend / rebase / squash / cherry-pick 时把归因重映射到新提交。",
+      "preconditionTitle": "前提:所有自动归因都要求在 git-ai 监控下操作",
+      "precondition": "git-ai 不再依赖 git 自带钩子,而是把自己作为 git 代理(PATH 顶部 shim)+ 常驻 daemon,通过 git trace2 事件与 reflog 识别你执行了什么命令。因此下面的自动归因 / 重映射,只在「装了 git-ai、daemon 在线」的机器上执行该 git 操作时才生效。在没装 git-ai 的机器、或绕过代理直接调用原始 git(部分 GUI、CI)时,该次操作不会被捕获,相关行落入「未知」——这是如实呈现,不是 bug。",
+      "colTarget": "产物提交",
+      "colOriginal": "原提交 / 分支",
+      "tone": {
+        "ai": "AI 归因",
+        "partial": "部分 / 有条件",
+        "none": "不归因"
+      },
+      "items": [
+        {
+          "op": "AI agent 编辑后 git commit",
+          "tone": "ai",
+          "target": "新提交写入 refs/notes/ai 归因,AI 改的行计为 AI",
+          "original": "不涉及(新提交不改写历史,父提交各自的 note 不动)",
+          "note": "前提:daemon 在线 + agent 编辑时触发了 checkpoint。两者缺一,这些行不报错,而是落入「未知」而非 AI。"
+        },
+        {
+          "op": "纯人工提交 / 未触发 checkpoint / 历史提交",
+          "tone": "none",
+          "target": "不计为 AI:装了 IDE 扩展并观测到真人输入 → 计「人类」;否则 → 计「未知」",
+          "original": "不涉及",
+          "note": "git-ai 给每个提交都挂一条 note,但「这行算谁」取决于编辑时是否被观测到。"
+        },
+        {
+          "op": "git commit --amend",
+          "tone": "ai",
+          "target": "改写后的新提交继承原提交的 AI 行归因(行号按新内容重算),人类贡献者与会话记录一并保留",
+          "original": "原提交变为游离对象;它的 note 既不复制到新提交、也不被主动删除,随 git 垃圾回收一起消失",
+          "note": "需 daemon 在线;脱离 git-ai 监控的纯 git amend 不会自动得到归因。"
+        },
+        {
+          "op": "git rebase(交互 / 变基)",
+          "tone": "partial",
+          "target": "新提交自动归因:未冲突的行精确平移行号;手动把冲突解成全新内容的那几行精确行级归因会丢,但原 note 会整体迁到新提交,保住「该文件曾有 AI 参与」;若冲突由 AI 解决(解冲突时跑过 checkpoint)行级归因可精确恢复",
+          "original": "copy 语义:原提交的 note 保留不删",
+          "note": "需 daemon;若 git-ai 重建不出 旧→新 提交映射,会响亮报错且这次 rebase 不写任何归因(不瞎兜底)。"
+        },
+        {
+          "op": "git merge --squash(压扁合并)",
+          "tone": "ai",
+          "target": "新的 squash 提交自动重算并写入 AI 行归因,prompt / 会话总量与自定义属性都保留",
+          "original": "源分支的原始提交 SHA 不变、各自的 note 原样保留",
+          "note": "需 daemon 监控整个 squash + commit 序列;纯 git 压扁合并不会自动归因。"
+        },
+        {
+          "op": "真实 merge 到 UAT(非快进)",
+          "tone": "partial",
+          "target": "被并入的每个原提交带着各自归因进入 UAT,blame 仍正确显示为 AI;merge commit 本身:无冲突的一步式合并 → 不带 note;有冲突手动解决后再 git commit 收尾 → 只记录冲突解决那几行的归因",
+          "original": "被并入的原提交 SHA 与 note 原样不变",
+          "note": "merge commit 的 git-ai 统计被刻意跳过(性能考虑),不代表归因丢失。"
+        },
+        {
+          "op": "cherry-pick 到 UAT",
+          "tone": "ai",
+          "target": "UAT 上生成的新提交自动继承该改动的 AI 归因(按新代码位置重算行号)",
+          "original": "源(dev)分支的原始提交 SHA 与归因 note 原样不变",
+          "note": "需 daemon 在线;在没有 git-ai 监控的环境里跑的纯 git cherry-pick,新提交不会自动获得归因。"
+        },
+        {
+          "op": "git revert",
+          "tone": "none",
+          "target": "撤销生成的新提交默认不带归因 note,统计里整段算「未知」——不会把撤销动作算成 AI",
+          "original": "被 revert 的原提交及其 AI 归因原样保留",
+          "note": "用 revert 撤销 AI 代码不会「洗白」原始 AI 归因。"
+        }
+      ],
+      "propagationTitle": "归因 note 的传播(默认本地)",
+      "propagation": "归因默认存在仓库的 refs/notes/ai;git 原生 push / pull / clone 并不携带它。装了 git-ai 且 daemon 在线、用默认 git-notes 后端时,push / pull / clone 会自动同步这条 ref,否则需手动 git ai fetch-notes。可选的 HTTP 后端则完全不进 git,只存本地并上传到你自配的服务。一句话:归因默认是本机 / 仓库本地的,跨机共享依赖 git-ai 自己的同步,而非 git 原生 note 复制。"
     },
     "commands": {
       "hint": "以下命令以 git-ai 官方 README 与本工具实际调用为准。多数操作已封装为按钮,这里供你在终端手动核对 / 排查时参考。",

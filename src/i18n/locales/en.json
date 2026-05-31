@@ -698,7 +698,80 @@
     "tabs": {
       "commands": "git-ai commands",
       "metrics": "Metric definitions",
+      "attribution": "Attribution coverage",
       "troubleshooting": "Troubleshooting"
+    },
+    "attribution": {
+      "hint": "Which git operations get captured as AI authorship, and whether the source branch keeps its attribution. git-ai captures git operations through a git proxy + background daemon + git trace2 + reflog (it no longer uses git's own hooks), and re-maps attribution onto the new commits on amend / rebase / squash / cherry-pick.",
+      "preconditionTitle": "Precondition: all automatic attribution requires running under git-ai",
+      "precondition": "git-ai no longer relies on git's built-in hooks. It installs itself as a git proxy (a shim at the front of PATH) plus a resident daemon, and recognizes what you ran via git trace2 events and the reflog. So the automatic attribution / re-mapping below only takes effect when the git operation runs on a machine where git-ai is installed and the daemon is live. On a machine without git-ai, or when the real git is invoked directly bypassing the proxy (some GUIs, CI), the operation is not captured and those lines fall into \"unknown\" — that is an honest representation, not a bug.",
+      "colTarget": "Resulting commit",
+      "colOriginal": "Original commit / branch",
+      "tone": {
+        "ai": "AI attributed",
+        "partial": "Partial / conditional",
+        "none": "Not attributed"
+      },
+      "items": [
+        {
+          "op": "git commit after an AI agent edits",
+          "tone": "ai",
+          "target": "The new commit gets a refs/notes/ai note; lines the AI changed count as AI",
+          "original": "N/A (a new commit rewrites no history; parent notes are untouched)",
+          "note": "Requires the daemon to be live AND a checkpoint to have fired while the agent edited. Missing either, those lines don't error — they fall into \"unknown\" rather than AI."
+        },
+        {
+          "op": "Plain human commit / no checkpoint / pre-git-ai history",
+          "tone": "none",
+          "target": "Not counted as AI: if a git-ai IDE extension observed real human typing → \"human\"; otherwise → \"unknown\"",
+          "original": "N/A",
+          "note": "git-ai attaches a note to every commit, but \"who owns this line\" depends on whether the edit was observed at the time."
+        },
+        {
+          "op": "git commit --amend",
+          "tone": "ai",
+          "target": "The rewritten commit inherits the original's AI line attribution (line numbers recomputed against new content); human contributors and sessions are preserved",
+          "original": "The original commit becomes dangling; its note is neither copied to the new commit nor actively deleted — it disappears with git garbage collection",
+          "note": "Requires a live daemon; a plain git amend outside git-ai gets no automatic attribution."
+        },
+        {
+          "op": "git rebase",
+          "tone": "partial",
+          "target": "New commits are attributed automatically: untouched lines shift line numbers precisely; lines you resolve a conflict into entirely new content lose precise per-line attribution, but the original note is migrated wholesale to the new commit (preserving \"this file had AI involvement\"); if the AI resolves the conflict (a checkpoint ran during resolution) per-line attribution is recovered precisely",
+          "original": "Copy semantics: the original commit's note is kept, not deleted",
+          "note": "Requires the daemon; if git-ai cannot rebuild the old→new commit mapping it fails loudly and writes no attribution for that rebase (no silent fallback)."
+        },
+        {
+          "op": "git merge --squash",
+          "tone": "ai",
+          "target": "The new squash commit gets AI line attribution recomputed and written; prompt / session totals and custom attributes are preserved",
+          "original": "The source branch's original commit SHAs and their notes are kept unchanged",
+          "note": "Requires the daemon to observe the whole squash + commit sequence; a plain git squash merge is not attributed automatically."
+        },
+        {
+          "op": "True merge into UAT (non-fast-forward)",
+          "tone": "partial",
+          "target": "Each merged-in original commit carries its own attribution into UAT, and blame still shows those lines as AI; the merge commit itself: a clean one-step merge carries no note; if you resolve conflicts and finish with git commit, it records attribution only for the conflict-resolution lines",
+          "original": "The merged-in original commit SHAs and notes are unchanged",
+          "note": "git-ai stats for the merge commit are deliberately skipped (performance), which does not mean attribution is lost."
+        },
+        {
+          "op": "cherry-pick into UAT",
+          "tone": "ai",
+          "target": "The new commit created on UAT inherits the change's AI attribution (line numbers recomputed for the new position)",
+          "original": "The source (dev) branch's original commit SHA and its note stay unchanged",
+          "note": "Requires a live daemon; a plain git cherry-pick run without git-ai gets no automatic attribution."
+        },
+        {
+          "op": "git revert",
+          "tone": "none",
+          "target": "The revert commit carries no attribution note by default and counts entirely as \"unknown\" in stats — the revert is not credited to AI",
+          "original": "The reverted original commit and its AI attribution are kept unchanged",
+          "note": "Reverting AI code does not \"launder away\" the original AI attribution."
+        }
+      ],
+      "propagationTitle": "How attribution notes propagate (local by default)",
+      "propagation": "Attribution lives in the repository's refs/notes/ai by default; plain git push / pull / clone does not carry it. With git-ai installed and the daemon live on the git-notes backend, push / pull / clone sync that ref automatically; otherwise run git ai fetch-notes manually. The optional HTTP backend keeps attribution entirely out of git — stored locally and uploaded to your own service. In short: attribution is machine/repo-local by default, and cross-machine sharing relies on git-ai's own sync rather than git's native note copying."
     },
     "commands": {
       "hint": "The commands below follow the official git-ai README and the calls this tool actually makes. Most actions are wrapped as buttons; this list is for cross-checking or troubleshooting in a terminal.",

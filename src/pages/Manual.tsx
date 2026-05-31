@@ -12,7 +12,15 @@
 // - 文案走 i18n:命令 / 排查列表用 t(key, { returnObjects }) 取结构化数组;
 //   指标定义复用 formulas.ts 的 METRICS,口径与上游 git-ai stats.rs 对齐(见 formulas.ts 头注)
 
-import { BookOpen, Check, Copy as CopyIcon, Gauge, Terminal, Wrench } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  Copy as CopyIcon,
+  GitBranch,
+  Gauge,
+  Terminal,
+  Wrench,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,13 +28,23 @@ import { useTranslation } from "react-i18next";
 import { Card } from "../components/ui/card";
 import { METRICS, type FormulaToken, type MetricId } from "../lib/formulas";
 
-type TabId = "commands" | "metrics" | "troubleshooting";
+type TabId = "commands" | "metrics" | "attribution" | "troubleshooting";
 
 const TABS: { id: TabId; labelKey: string; icon: LucideIcon }[] = [
   { id: "commands", labelKey: "manual.tabs.commands", icon: Terminal },
   { id: "metrics", labelKey: "manual.tabs.metrics", icon: Gauge },
+  { id: "attribution", labelKey: "manual.tabs.attribution", icon: GitBranch },
   { id: "troubleshooting", labelKey: "manual.tabs.troubleshooting", icon: Wrench },
 ];
+
+/** 归因覆盖行:i18n manual.attribution.items 的元素形态。 */
+interface AttributionRow {
+  op: string;
+  tone: "ai" | "partial" | "none";
+  target: string;
+  original: string;
+  note: string;
+}
 
 /** 命令条目:i18n manual.commands.items 的元素形态。 */
 interface CommandItem {
@@ -89,6 +107,7 @@ export default function ManualPage() {
 
       {tab === "commands" && <CommandsTab />}
       {tab === "metrics" && <MetricsTab />}
+      {tab === "attribution" && <AttributionTab />}
       {tab === "troubleshooting" && <TroubleshootingTab />}
     </div>
   );
@@ -145,6 +164,64 @@ function MetricsTab() {
             </Card>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function AttributionTab() {
+  const { t } = useTranslation();
+  const items = t("manual.attribution.items", { returnObjects: true }) as AttributionRow[];
+  const toneClass = (tone: AttributionRow["tone"]) =>
+    tone === "ai"
+      ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+      : tone === "partial"
+        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300";
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">{t("manual.attribution.hint")}</p>
+
+      {/* 前置条件:所有自动归因都依赖 git-ai 监控(代理 + daemon),非 git 钩子 */}
+      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+        <div className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+          {t("manual.attribution.preconditionTitle")}
+        </div>
+        <p className="mt-1 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300/90">
+          {t("manual.attribution.precondition")}
+        </p>
+      </div>
+
+      {items.map((row) => (
+        <Card key={row.op} className="gap-1.5 px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-mono text-sm font-semibold text-foreground">{row.op}</span>
+            <span
+              className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${toneClass(row.tone)}`}
+            >
+              {t(`manual.attribution.tone.${row.tone}` as never)}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <span className="text-foreground/70">{t("manual.attribution.colTarget")}:</span>{" "}
+            {row.target}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <span className="text-foreground/70">{t("manual.attribution.colOriginal")}:</span>{" "}
+            {row.original}
+          </p>
+          <p className="text-[11px] leading-relaxed text-slate-500">{row.note}</p>
+        </Card>
+      ))}
+
+      {/* 归因 note 的传播(默认本地) */}
+      <div className="rounded-md border border-border bg-slate-50 p-3 dark:bg-background">
+        <div className="text-xs font-semibold text-foreground">
+          {t("manual.attribution.propagationTitle")}
+        </div>
+        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+          {t("manual.attribution.propagation")}
+        </p>
       </div>
     </div>
   );
