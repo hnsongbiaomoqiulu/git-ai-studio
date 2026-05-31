@@ -390,7 +390,7 @@ function Header({
             <ChevronRight className="h-3 w-3 text-muted-foreground" />
           </button>
           <span className="text-muted-foreground/40">·</span>
-          <span>本机解析,不上传</span>
+          <span>{t("dashboard.privacyHint")}</span>
         </div>
         {/* 数据怎么统计的一行说明:点各指标 / 区块标题旁的 ⓘ 看完整公式与口径。 */}
         <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">
@@ -406,7 +406,7 @@ function Header({
           type="button"
           onClick={onRefresh}
           disabled={isFetching}
-          aria-label="立即刷新 Dashboard"
+          aria-label={t("dashboard.refreshAriaLabel")}
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs text-muted-foreground transition-colors duration-150 hover:bg-muted/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
@@ -654,8 +654,8 @@ function HeroKpiRow({
       <SecondaryKpi
         label={t("dashboard.metricTitles.windowAiTotal")}
         value={formatInt(windowAiTotal)}
-        unit="行"
-        caption={`窗口含 ${formatInt(commitCount)} 个 commit`}
+        unit={t("dashboard.unitLines")}
+        caption={t("dashboard.windowCommitCaption", { count: formatInt(commitCount) })}
         formulaId="window_ai_total"
       />
     </section>
@@ -825,10 +825,10 @@ function WindowAiChart({
       <div className="flex items-center justify-between gap-3">
         <h2 className="flex items-center gap-1 text-sm font-medium text-foreground">
           {granularity === "week"
-            ? "每周 AI 行数"
+            ? t("dashboard.chartTitle.week")
             : granularity === "month"
-              ? "每月 AI 行数"
-              : "每日 AI 行数"}
+              ? t("dashboard.chartTitle.month")
+              : t("dashboard.chartTitle.day")}
           <FormulaPopover metricId="window_ai_total" />
         </h2>
         <GranularityToggle value={granularity} onChange={onChangeGranularity} />
@@ -893,13 +893,6 @@ function formatBucketLabel(date: string, g: Granularity): string {
   return g === "month" ? date.slice(0, 7) : date.slice(5);
 }
 
-/** tooltip 顶部日期:按粒度点明"当周/当月",避免周/月桶的日期被误读成某一天。 */
-function formatBucketTooltipDate(date: string, g: Granularity): string {
-  if (g === "month") return `${date.slice(0, 7)} 当月`;
-  if (g === "week") return `${date.slice(5)} 当周(周一起)`;
-  return date;
-}
-
 /** 自定义 tooltip:三行,date 顶,3 桶下方,等宽对齐;沿用 popover 主题色。 */
 function MinimalTooltip({
   active,
@@ -910,19 +903,24 @@ function MinimalTooltip({
   payload?: TooltipPayloadItem[];
   granularity: Granularity;
 }) {
+  const { t } = useTranslation();
   if (!active || !payload || payload.length === 0) return null;
   const d = payload[0].payload;
   return (
     <div className="rounded-md border border-border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-sm">
       <div className="font-mono text-[11px] text-muted-foreground">
-        {formatBucketTooltipDate(d.date, granularity)}
+        {granularity === "month"
+          ? t("dashboard.tooltipDate.month", { date: d.date.slice(0, 7) })
+          : granularity === "week"
+            ? t("dashboard.tooltipDate.week", { date: d.date.slice(5) })
+            : d.date}
       </div>
       <div className="mt-1 grid grid-cols-[auto_auto] gap-x-3 gap-y-0.5 font-mono text-[11px] tabular-nums">
         <span className="text-muted-foreground">AI</span>
         <span className="text-right">{formatInt(d.ai)}</span>
-        <span className="text-muted-foreground">人工</span>
+        <span className="text-muted-foreground">{t("dashboard.tooltipBucket.human")}</span>
         <span className="text-right">{formatInt(d.human)}</span>
-        <span className="text-muted-foreground">未归因</span>
+        <span className="text-muted-foreground">{t("dashboard.tooltipBucket.unknown")}</span>
         <span className="text-right">{formatInt(d.unknown)}</span>
       </div>
     </div>
@@ -952,10 +950,12 @@ function RecentCommitsTable({
     <section className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div className="flex items-baseline justify-between">
         <h2 className="flex items-center gap-1 text-sm font-medium text-foreground">
-          最近 commit
+          {t("dashboard.recentCommits.title")}
           <FormulaPopover metricId="ai_share" />
         </h2>
-        <span className="text-[10px] text-muted-foreground">点击进入 commit 详情</span>
+        <span className="text-[10px] text-muted-foreground">
+          {t("dashboard.recentCommits.clickHint")}
+        </span>
       </div>
       <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-xs">
@@ -965,10 +965,18 @@ function RecentCommitsTable({
               <th className="px-3 py-2 text-left font-medium">
                 {t("dashboard.recentCommits.repo")}
               </th>
-              <th className="px-3 py-2 text-left font-medium">时间</th>
-              <th className="w-[80px] px-3 py-2 text-right font-medium">AI 占比</th>
-              <th className="w-[80px] px-3 py-2 text-right font-medium">AI 行</th>
-              <th className="w-[80px] px-3 py-2 text-right font-medium">总行</th>
+              <th className="px-3 py-2 text-left font-medium">
+                {t("dashboard.recentCommits.time")}
+              </th>
+              <th className="w-[80px] px-3 py-2 text-right font-medium">
+                {t("dashboard.recentCommits.aiShare")}
+              </th>
+              <th className="w-[80px] px-3 py-2 text-right font-medium">
+                {t("dashboard.recentCommits.aiLines")}
+              </th>
+              <th className="w-[80px] px-3 py-2 text-right font-medium">
+                {t("dashboard.recentCommits.totalLines")}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -1012,8 +1020,7 @@ function RecentCommitsTable({
       </div>
       {more > 0 && (
         <p className="text-[11px] text-muted-foreground">
-          还有 <span className="font-mono tabular-nums">{more}</span> 个 commit 未显示 —
-          切换更大时间窗口或在 People / Blame 页深入。
+          {t("dashboard.recentCommits.moreHint", { more })}
         </p>
       )}
     </section>
@@ -1088,7 +1095,8 @@ function CurrentRepoNotInAggregateBanner({
 
 function EmptyWindowCard({ range, onWiden }: { range: TimeRange; onWiden: () => void }) {
   const { t } = useTranslation();
-  const label = describeRange(range);
+  const desc = describeRange(range);
+  const label = "literal" in desc ? desc.literal : t(desc.key as never, desc.opts);
   const alreadyWidest = range.kind === "last_n_days" && range.days >= 90;
   return (
     <div className="rounded-xl border border-dashed border-border px-8 py-10 text-center animate-in fade-in duration-200">
@@ -1151,10 +1159,7 @@ function Footnote({
   const rel = fetchedAt ? formatRelativeFromNow(fetchedAt, now) : "—";
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-[10px] text-muted-foreground">
-      <div>
-        数据更新于 <span className="font-mono tabular-nums">{rel}</span>
-        <span className="mx-1.5">·</span>缓存 {DASHBOARD_STALE_TIME_SECONDS}s
-      </div>
+      <div>{t("dashboard.footnote", { rel, seconds: DASHBOARD_STALE_TIME_SECONDS })}</div>
       <div className="font-mono tabular-nums">
         {t("dashboard.cacheHint.cachedTemplate", { hits: cacheHits, total: totalInWindow })}
       </div>
@@ -1277,29 +1282,33 @@ function startOfThisWeek(): number {
 }
 
 /** TimeRange → 中文标签(空窗口提示用)。 */
-function describeRange(r: TimeRange): string {
+/** TimeRange → 空窗口卡的范围描述:返回 i18n key(+ 可选插值)或纯字面量(custom 的日期区间无中文)。
+ *  返回描述符而非直接调 t,避免把 react-i18next 的 t 类型传进模块级函数(深类型实例化)。 */
+function describeRange(
+  r: TimeRange,
+): { key: string; opts?: Record<string, number> } | { literal: string } {
   switch (r.kind) {
     case "today":
-      return "今天";
+      return { key: "dashboard.rangeLabel.today" };
     case "yesterday":
-      return "昨天";
+      return { key: "dashboard.rangeLabel.yesterday" };
     case "this_week":
-      return "本周";
+      return { key: "dashboard.rangeLabel.thisWeek" };
     case "last_week":
-      return "上周";
+      return { key: "dashboard.rangeLabel.lastWeek" };
     case "this_month":
-      return "本月";
+      return { key: "dashboard.rangeLabel.thisMonth" };
     case "last_month":
-      return "上月";
+      return { key: "dashboard.rangeLabel.lastMonth" };
     case "last_n_days":
-      return `近 ${r.days} 天`;
+      return { key: "dashboard.rangeLabel.lastNDays", opts: { days: r.days } };
     case "custom": {
       const fmt = (ms: number) => {
         const d = new Date(ms);
         const pad = (n: number) => String(n).padStart(2, "0");
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
       };
-      return `${fmt(r.start_unix_ms)} ~ ${fmt(r.end_unix_ms)}`;
+      return { literal: `${fmt(r.start_unix_ms)} ~ ${fmt(r.end_unix_ms)}` };
     }
   }
 }

@@ -196,9 +196,18 @@
     "aggregateFailed": "Cross-repo aggregation failed: {{msg}}",
     "failedReposHint": "{{n}} repos failed to collect and are excluded from the aggregate (never counted as zero).",
     "truncatedReposHint": "{{n}} repos hit the 500-commit cap; older commits are not included in this window.",
-    "granularity": { "day": "Daily", "week": "Weekly", "month": "Monthly" },
-    "scope": { "onlyMine": "Only me", "everyone": "Everyone" },
-    "delta": { "vsPrevPeriod": "vs previous period" },
+    "granularity": {
+      "day": "Daily",
+      "week": "Weekly",
+      "month": "Monthly"
+    },
+    "scope": {
+      "onlyMine": "Only me",
+      "everyone": "Everyone"
+    },
+    "delta": {
+      "vsPrevPeriod": "vs previous period"
+    },
     "working": {
       "title": "Uncommitted (now)",
       "hint": "your current working-tree edits · live",
@@ -208,7 +217,16 @@
       "allClean": "No uncommitted changes",
       "failedHint": "{{n}} repos failed to read; excluded"
     },
-    "recentCommits": { "repo": "Repo" },
+    "recentCommits": {
+      "repo": "Repo",
+      "title": "Recent commits",
+      "clickHint": "Click a row for commit details",
+      "time": "Time",
+      "aiShare": "AI share",
+      "aiLines": "AI lines",
+      "totalLines": "Total lines",
+      "moreHint": "{{more}} more commits hidden — widen the time window or dig in on the People / Blame pages."
+    },
     "repoBreakdown": {
       "title": "By repository",
       "repo": "Repo",
@@ -228,6 +246,33 @@
       "refreshNow": "Refresh now",
       "refreshing": "Refreshing…",
       "cachedTemplate": "{{hits}} / {{total}} served from local SQLite cache"
+    },
+    "privacyHint": "Parsed locally, never uploaded",
+    "refreshAriaLabel": "Refresh Dashboard now",
+    "unitLines": "lines",
+    "windowCommitCaption": "{{count}} commits in window",
+    "chartTitle": {
+      "week": "AI lines per week",
+      "month": "AI lines per month",
+      "day": "AI lines per day"
+    },
+    "tooltipDate": {
+      "week": "Week of {{date}} (from Mon)",
+      "month": "{{date}} (month)"
+    },
+    "tooltipBucket": {
+      "human": "Human",
+      "unknown": "Unattributed"
+    },
+    "footnote": "Updated {{rel}} · cache {{seconds}}s",
+    "rangeLabel": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "thisWeek": "This week",
+      "lastWeek": "Last week",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "lastNDays": "Last {{days}} days"
     }
   },
   "blame": {

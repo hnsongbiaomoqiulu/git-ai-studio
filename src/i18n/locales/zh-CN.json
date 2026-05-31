@@ -196,9 +196,18 @@
     "aggregateFailed": "跨仓聚合失败:{{msg}}",
     "failedReposHint": "{{n}} 个仓库采集失败,未纳入聚合统计(绝不当 0 并入)。",
     "truncatedReposHint": "{{n}} 个仓库 commit 数达上限(500),更老 commit 未计入本窗口。",
-    "granularity": { "day": "按天", "week": "按周", "month": "按月" },
-    "scope": { "onlyMine": "只看我", "everyone": "全部作者" },
-    "delta": { "vsPrevPeriod": "vs 上一周期" },
+    "granularity": {
+      "day": "按天",
+      "week": "按周",
+      "month": "按月"
+    },
+    "scope": {
+      "onlyMine": "只看我",
+      "everyone": "全部作者"
+    },
+    "delta": {
+      "vsPrevPeriod": "vs 上一周期"
+    },
     "working": {
       "title": "本地未提交",
       "hint": "你当前的未提交改动 · 实时",
@@ -208,7 +217,16 @@
       "allClean": "无未提交改动",
       "failedHint": "{{n}} 个仓读取未提交状态失败,未计入"
     },
-    "recentCommits": { "repo": "仓库" },
+    "recentCommits": {
+      "repo": "仓库",
+      "title": "最近 commit",
+      "clickHint": "点击进入 commit 详情",
+      "time": "时间",
+      "aiShare": "AI 占比",
+      "aiLines": "AI 行",
+      "totalLines": "总行",
+      "moreHint": "还有 {{more}} 个 commit 未显示 — 切换更大时间窗口或在 People / Blame 页深入。"
+    },
     "repoBreakdown": {
       "title": "按仓库分解",
       "repo": "仓库",
@@ -228,6 +246,33 @@
       "refreshNow": "立即刷新",
       "refreshing": "刷新中…",
       "cachedTemplate": "{{hits}} / {{total}} 命中本地 SQLite 缓存"
+    },
+    "privacyHint": "本机解析,不上传",
+    "refreshAriaLabel": "立即刷新 Dashboard",
+    "unitLines": "行",
+    "windowCommitCaption": "窗口含 {{count}} 个 commit",
+    "chartTitle": {
+      "week": "每周 AI 行数",
+      "month": "每月 AI 行数",
+      "day": "每日 AI 行数"
+    },
+    "tooltipDate": {
+      "week": "{{date}} 当周(周一起)",
+      "month": "{{date}} 当月"
+    },
+    "tooltipBucket": {
+      "human": "人工",
+      "unknown": "未归因"
+    },
+    "footnote": "数据更新于 {{rel}} · 缓存 {{seconds}}s",
+    "rangeLabel": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "thisWeek": "本周",
+      "lastWeek": "上周",
+      "thisMonth": "本月",
+      "lastMonth": "上月",
+      "lastNDays": "近 {{days}} 天"
     }
   },
   "blame": {
