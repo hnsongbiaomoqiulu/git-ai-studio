@@ -55,11 +55,12 @@ pub async fn diagnose_environment(
     // 1) 当前仓库
     let repo = state.current_repo.read().ok().and_then(|g| g.clone());
 
-    // 2) git-ai debug report —— 走子进程
+    // 2) git-ai debug —— 走子进程(上游 `git-ai debug` 不接受任何子参,传 `report` 会被
+    //    拒为 "unknown debug argument(s): report";与 commands/logs.rs 的调用保持一致)。
     let report = match git_ai::binary::resolve() {
         Ok(path) => {
             let cwd = repo.as_ref().map(|r| std::path::PathBuf::from(&r.path));
-            match crate::proc::run_capture(&path, &["debug", "report"], cwd.as_deref()).await {
+            match crate::proc::run_capture(&path, &["debug"], cwd.as_deref()).await {
                 Ok(out) if out.status == 0 => git_ai::debug::parse_debug_report(&out.stdout),
                 Ok(out) => DebugReport {
                     ok: false,
