@@ -690,6 +690,107 @@
       }
     }
   },
+  "repoSetupGuide": {
+    "steps": {
+      "welcome": {
+        "title": "欢迎使用 Git AI Studio",
+        "hint": "5 步快速上手,中途随时可跳过。"
+      },
+      "gitAi": {
+        "title": "检查 git-ai 安装",
+        "hint": "客户端依赖外部 git-ai CLI 解析每次 commit 的 AI 归因。"
+      },
+      "repo": {
+        "title": "配置本地仓库",
+        "hint": "选一个本地 Git 仓库,Dashboard / Stats / Blame 都会以它为对象。"
+      },
+      "hook": {
+        "title": "检查 hook 配置",
+        "hint": "hook 让 agent 编辑代码时自动写入 checkpoint,没有 hook 就拿不到 AI 行数。"
+      },
+      "done": {
+        "title": "全部就绪",
+        "hint": "数据全在本机解析,默认不上传任何东西。"
+      }
+    },
+    "toast": {
+      "rootRequired": "请先输入扫描根目录",
+      "scanFailed": "扫描仓库失败",
+      "repoSelected": "已选择仓库",
+      "selectFailed": "选择仓库失败",
+      "skipped": "已跳过引导,可在 设置 → 通用 中再次打开",
+      "saveStateFailed": "保存引导状态失败",
+      "pickDirFailed": "打开目录选择器失败"
+    },
+    "footer": {
+      "finish": "完成",
+      "back": "上一步",
+      "skip": "跳过引导",
+      "next": "下一步"
+    },
+    "welcome": {
+      "heading": "Git AI Studio 是什么?",
+      "intro": "外部 git-ai CLI 的本地客户端 —— 把每次 commit 里 AI 写了多少行、哪些行、用了哪个 prompt 可视化出来。",
+      "featureDashboard": ":仓库整体 AI 占比 / 时间分桶",
+      "featurePeople": ":按作者维度的 AI 贡献统计",
+      "featureBlame": ":逐行查看是 AI 还是人工写的、由哪个 prompt 生成",
+      "featureHooks": ":配置 AI agent 的 hook 与排查问题",
+      "noUpload": "所有数据在本机解析,默认不上传任何东西。"
+    },
+    "gitAi": {
+      "checking": "正在检查 git-ai 是否已安装…",
+      "detectedTitle": "已检测到 git-ai CLI",
+      "detectedBody": "后续 Studio 会把 git-ai 作为子进程调用解析每次 commit。直接进下一步。",
+      "missingTitle": "未检测到 git-ai 配置",
+      "missingBody": "Studio 是 git-ai 的客户端,没有它就拿不到 AI 归因数据。先去 Install 页一键安装,装好后回来点「重新检查」继续。",
+      "goInstall": "前往安装页"
+    },
+    "recheck": "重新检查",
+    "repo": {
+      "pickDialogTitle": "选择代码根目录",
+      "pickDir": "选择目录",
+      "noDirPicked": "未选择目录",
+      "scan": "扫描",
+      "pasteAdvanced": "直接粘路径(高级)",
+      "pathPlaceholder": "例如 D:\\script",
+      "emptyHint": "点上方「选择目录」选根目录后,点「扫描」会列出该目录下发现的 Git 仓库;选中后自动进入下一步。",
+      "select": "选中"
+    },
+    "hook": {
+      "checking": "正在读取 hook 配置…",
+      "configuredTitle": "hook 已配置(模式:{{mode}})",
+      "configuredBody": "AI agent 编辑文件时会自动写入 checkpoint,Dashboard 数据已经能正常采集。",
+      "unconfiguredTitle": "hook 尚未配置(当前 mode = {{mode}})",
+      "modeUnknown": "未知",
+      "unconfiguredBody": "AI agent 编辑文件需要 hook 配合才能被 git-ai 捕获。先去 Hooks 页配置(官方模式跨平台,推荐),改完必须重启 AI agent 与终端才生效。",
+      "goHooks": "前往 Hooks 配置页"
+    },
+    "done": {
+      "items": {
+        "ccSwitch": {
+          "label": "cc-switch 守护",
+          "hint": "cc-switch 切换 Codex / Claude profile 时自动恢复 git-ai hook。"
+        },
+        "lowAiShare": {
+          "label": "低 AI 占比提醒",
+          "hint": "近 7 天 AI 占比低于阈值(默认 80%)时弹 toast 并发送 OS 通知。"
+        },
+        "daemonUnhealthy": {
+          "label": "daemon 异常告警",
+          "hint": "daemon lock 阻塞导致 hook 全线挂时通过 OS 通知中心提醒。"
+        }
+      },
+      "completeTitle": "配置完成",
+      "completeBody": "现在可以进入 Dashboard 看每次 commit 的 AI 归因数据了。",
+      "goDashboard": "进入 Dashboard",
+      "advancedTitle": "进阶:3 项监控告警(默认全关)",
+      "goSettings": "前往 设置 → 守护与通知",
+      "advancedHint": "按需开,关也无所谓 — 数据采集本身只依赖 hook,不依赖这些告警。",
+      "statusOn": "已开",
+      "statusOff": "未开",
+      "footerHint": "下次想再走一遍引导:设置 → 通用 → 「重新查看引导」。遇到问题:Diagnostic 页有自动检查清单 + Logs 页有 git-ai debug 实时输出。"
+    }
+  },
   "manual": {
     "page": {
       "title": "用户手册",

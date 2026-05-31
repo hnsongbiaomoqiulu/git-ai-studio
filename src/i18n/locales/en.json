@@ -690,6 +690,107 @@
       }
     }
   },
+  "repoSetupGuide": {
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Git AI Studio",
+        "hint": "Get started in 5 steps. You can skip at any time."
+      },
+      "gitAi": {
+        "title": "Check git-ai installation",
+        "hint": "This client relies on the external git-ai CLI to analyze AI attribution for each commit."
+      },
+      "repo": {
+        "title": "Configure a local repository",
+        "hint": "Pick a local Git repository. Dashboard / Stats / Blame all operate on it."
+      },
+      "hook": {
+        "title": "Check hook configuration",
+        "hint": "Hooks automatically write a checkpoint when an agent edits code. Without hooks, AI line counts are unavailable."
+      },
+      "done": {
+        "title": "All set",
+        "hint": "All data is analyzed locally; nothing is uploaded by default."
+      }
+    },
+    "toast": {
+      "rootRequired": "Please enter a scan root directory first.",
+      "scanFailed": "Failed to scan repositories",
+      "repoSelected": "Repository selected",
+      "selectFailed": "Failed to select repository",
+      "skipped": "Onboarding skipped. You can reopen it from Settings → General.",
+      "saveStateFailed": "Failed to save onboarding state",
+      "pickDirFailed": "Failed to open directory picker"
+    },
+    "footer": {
+      "finish": "Finish",
+      "back": "Back",
+      "skip": "Skip",
+      "next": "Next"
+    },
+    "welcome": {
+      "heading": "What is Git AI Studio?",
+      "intro": "A local client for the external git-ai CLI — it visualizes how many lines, which lines, and which prompt the AI produced in each commit.",
+      "featureDashboard": ": overall repo AI share / time buckets",
+      "featurePeople": ": AI contribution stats by author",
+      "featureBlame": ": line-by-line view of whether AI or a human wrote it, and which prompt generated it",
+      "featureHooks": ": configure AI agent hooks and troubleshoot issues",
+      "noUpload": "All data is analyzed locally; nothing is uploaded by default."
+    },
+    "gitAi": {
+      "checking": "Checking whether git-ai is installed…",
+      "detectedTitle": "git-ai CLI detected",
+      "detectedBody": "Studio will invoke git-ai as a subprocess to analyze each commit. Continue to the next step.",
+      "missingTitle": "git-ai configuration not detected",
+      "missingBody": "Studio is a client for git-ai; without it, no AI attribution data is available. Install it from the Install page, then come back and click \"Re-check\" to continue.",
+      "goInstall": "Go to Install page"
+    },
+    "recheck": "Re-check",
+    "repo": {
+      "pickDialogTitle": "Choose a code root directory",
+      "pickDir": "Choose directory",
+      "noDirPicked": "No directory selected",
+      "scan": "Scan",
+      "pasteAdvanced": "Paste path directly (advanced)",
+      "pathPlaceholder": "e.g. D:\\script",
+      "emptyHint": "Click \"Choose directory\" above to pick a root, then click \"Scan\" to list the Git repositories found under it. Selecting one automatically continues to the next step.",
+      "select": "Select"
+    },
+    "hook": {
+      "checking": "Reading hook configuration…",
+      "configuredTitle": "Hook configured (mode: {{mode}})",
+      "configuredBody": "When an AI agent edits files, a checkpoint is written automatically, and Dashboard data is being collected normally.",
+      "unconfiguredTitle": "Hook not configured yet (current mode = {{mode}})",
+      "modeUnknown": "unknown",
+      "unconfiguredBody": "AI agent file edits need a hook to be captured by git-ai. Configure it on the Hooks page (official mode is cross-platform and recommended). After changing it, you must restart your AI agent and terminal for it to take effect.",
+      "goHooks": "Go to Hooks page"
+    },
+    "done": {
+      "items": {
+        "ccSwitch": {
+          "label": "cc-switch guard",
+          "hint": "Automatically restore the git-ai hook when cc-switch switches Codex / Claude profiles."
+        },
+        "lowAiShare": {
+          "label": "Low AI share alert",
+          "hint": "Show a toast and send an OS notification when the 7-day AI share falls below the threshold (default 80%)."
+        },
+        "daemonUnhealthy": {
+          "label": "Daemon unhealthy alert",
+          "hint": "Alert via the OS notification center when a daemon lock blockage takes down all hooks."
+        }
+      },
+      "completeTitle": "Setup complete",
+      "completeBody": "You can now open the Dashboard to see AI attribution data for each commit.",
+      "goDashboard": "Open Dashboard",
+      "advancedTitle": "Advanced: 3 monitoring alerts (all off by default)",
+      "goSettings": "Go to Settings → Daemon & notifications",
+      "advancedHint": "Enable as needed — leaving them off is fine. Data collection itself depends only on hooks, not on these alerts.",
+      "statusOn": "On",
+      "statusOff": "Off",
+      "footerHint": "To run onboarding again: Settings → General → \"Reopen onboarding\". Having trouble: the Diagnostic page has an automated checklist and the Logs page shows live git-ai debug output."
+    }
+  },
   "manual": {
     "page": {
       "title": "User manual",

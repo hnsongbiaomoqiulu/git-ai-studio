@@ -25,6 +25,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Dialog } from "./ui/DialogShell";
@@ -50,23 +51,24 @@ export const REPO_SETUP_GUIDE_OPEN_EVENT = "git-ai-studio:repo-setup-guide-open"
 
 type WizardStep = 0 | 1 | 2 | 3 | 4;
 
-const STEP_TITLES = [
-  "欢迎使用 Git AI Studio",
-  "检查 git-ai 安装",
-  "配置本地仓库",
-  "检查 hook 配置",
-  "全部就绪",
+const STEP_TITLE_KEYS = [
+  "repoSetupGuide.steps.welcome.title",
+  "repoSetupGuide.steps.gitAi.title",
+  "repoSetupGuide.steps.repo.title",
+  "repoSetupGuide.steps.hook.title",
+  "repoSetupGuide.steps.done.title",
 ] as const;
 
-const STEP_HINTS = [
-  "5 步快速上手,中途随时可跳过。",
-  "客户端依赖外部 git-ai CLI 解析每次 commit 的 AI 归因。",
-  "选一个本地 Git 仓库,Dashboard / Stats / Blame 都会以它为对象。",
-  "hook 让 agent 编辑代码时自动写入 checkpoint,没有 hook 就拿不到 AI 行数。",
-  "数据全在本机解析,默认不上传任何东西。",
+const STEP_HINT_KEYS = [
+  "repoSetupGuide.steps.welcome.hint",
+  "repoSetupGuide.steps.gitAi.hint",
+  "repoSetupGuide.steps.repo.hint",
+  "repoSetupGuide.steps.hook.hint",
+  "repoSetupGuide.steps.done.hint",
 ] as const;
 
 export function RepoSetupGuide({ settings, onRepoChanged }: Props) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { navigate } = useRouter();
   const [explicitOpen, setExplicitOpen] = useState(false);
@@ -124,13 +126,14 @@ export function RepoSetupGuide({ settings, onRepoChanged }: Props) {
   const scanM = useMutation({
     mutationFn: async () => {
       const trimmed = root.trim();
-      if (!trimmed) throw new Error("请先输入扫描根目录");
+      if (!trimmed) throw new Error(t("repoSetupGuide.toast.rootRequired"));
       await setScanRoots([trimmed]);
       await qc.invalidateQueries({ queryKey: ["scan_roots"] });
       await qc.invalidateQueries({ queryKey: ["repos"] });
       return reposQ.refetch();
     },
-    onError: (e) => toast.error("扫描仓库失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("repoSetupGuide.toast.scanFailed"), { description: (e as Error).message }),
   });
 
   const selectM = useMutation({
@@ -139,17 +142,19 @@ export function RepoSetupGuide({ settings, onRepoChanged }: Props) {
       return repo;
     },
     onSuccess: (repo) => {
-      toast.success("已选择仓库", { description: repo.path });
+      toast.success(t("repoSetupGuide.toast.repoSelected"), { description: repo.path });
       onRepoChanged();
       setStep(3); // 进 hook 检查
     },
-    onError: (e) => toast.error("选择仓库失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("repoSetupGuide.toast.selectFailed"), { description: (e as Error).message }),
   });
 
   const skipM = useMutation({
     mutationFn: markSeen,
-    onSuccess: () => toast.message("已跳过引导,可在 Settings → 通用 中再次打开"),
-    onError: (e) => toast.error("保存引导状态失败", { description: (e as Error).message }),
+    onSuccess: () => toast.message(t("repoSetupGuide.toast.skipped")),
+    onError: (e) =>
+      toast.error(t("repoSetupGuide.toast.saveStateFailed"), { description: (e as Error).message }),
   });
 
   const closeWizard = () => {
@@ -180,8 +185,8 @@ export function RepoSetupGuide({ settings, onRepoChanged }: Props) {
           closeWizard();
         }
       }}
-      title={STEP_TITLES[step]}
-      description={STEP_HINTS[step]}
+      title={t(STEP_TITLE_KEYS[step])}
+      description={t(STEP_HINT_KEYS[step])}
       size="lg"
       footer={
         <WizardFooter
@@ -251,7 +256,7 @@ export function RepoSetupGuide({ settings, onRepoChanged }: Props) {
 function StepIndicator({ current }: { current: WizardStep }) {
   return (
     <ol className="flex items-center justify-between gap-1">
-      {STEP_TITLES.map((_, i) => {
+      {STEP_TITLE_KEYS.map((_, i) => {
         const active = i === current;
         const done = i < current;
         return (
@@ -267,7 +272,7 @@ function StepIndicator({ current }: { current: WizardStep }) {
             >
               {done ? <CheckCircle2 className="h-3 w-3" /> : i + 1}
             </span>
-            {i < STEP_TITLES.length - 1 && (
+            {i < STEP_TITLE_KEYS.length - 1 && (
               <span
                 className={
                   done ? "h-px flex-1 bg-emerald-500" : "h-px flex-1 bg-slate-200 dark:bg-border"
@@ -298,6 +303,7 @@ function WizardFooter({
   onFinish: () => void;
   nextDisabled: boolean;
 }) {
+  const { t } = useTranslation();
   if (step === 4) {
     return (
       <button
@@ -305,7 +311,7 @@ function WizardFooter({
         onClick={onFinish}
         className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
       >
-        完成
+        {t("repoSetupGuide.footer.finish")}
       </button>
     );
   }
@@ -317,7 +323,7 @@ function WizardFooter({
           onClick={onBack}
           className="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
         >
-          上一步
+          {t("repoSetupGuide.footer.back")}
         </button>
       ) : (
         <span />
@@ -327,7 +333,7 @@ function WizardFooter({
         onClick={onSkip}
         className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 dark:border-border dark:text-slate-300 dark:hover:bg-slate-800"
       >
-        跳过引导
+        {t("repoSetupGuide.footer.skip")}
       </button>
       <button
         type="button"
@@ -335,7 +341,7 @@ function WizardFooter({
         disabled={nextDisabled}
         className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        下一步
+        {t("repoSetupGuide.footer.next")}
       </button>
     </>
   );
@@ -344,31 +350,33 @@ function WizardFooter({
 // ============ Step 0: Welcome ============
 
 function WelcomeStep() {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3 rounded-md border border-primary bg-primary/10 p-4 text-sm dark:border-primary dark:bg-primary/10">
       <div className="flex items-center gap-2 font-medium text-primary">
-        <Sparkles className="h-4 w-4" /> Git AI Studio 是什么?
+        <Sparkles className="h-4 w-4" /> {t("repoSetupGuide.welcome.heading")}
       </div>
-      <p className="text-primary/80 dark:text-primary/80">
-        外部 <code className="font-mono">git-ai</code> CLI 的本地客户端 —— 把每次 commit 里 AI
-        写了多少行、哪些行、用了哪个 prompt 可视化出来。
-      </p>
+      <p className="text-primary/80 dark:text-primary/80">{t("repoSetupGuide.welcome.intro")}</p>
       <ul className="ml-4 list-disc space-y-1 text-primary/80 dark:text-primary/80">
         <li>
-          <strong>Dashboard / Stats</strong>:仓库整体 AI 占比 / 时间分桶
+          <strong>Dashboard / Stats</strong>
+          {t("repoSetupGuide.welcome.featureDashboard")}
         </li>
         <li>
-          <strong>People</strong>:按作者维度的 AI 贡献统计
+          <strong>People</strong>
+          {t("repoSetupGuide.welcome.featurePeople")}
         </li>
         <li>
-          <strong>Blame</strong>:逐行查看是 AI 还是人工写的、由哪个 prompt 生成
+          <strong>Blame</strong>
+          {t("repoSetupGuide.welcome.featureBlame")}
         </li>
         <li>
-          <strong>Hooks / Diagnostic</strong>:配置 AI agent 的 hook 与排查问题
+          <strong>Hooks / Diagnostic</strong>
+          {t("repoSetupGuide.welcome.featureHooks")}
         </li>
       </ul>
       <p className="text-[11px] text-primary/60 dark:text-primary/60">
-        所有数据在本机解析,默认不上传任何东西。
+        {t("repoSetupGuide.welcome.noUpload")}
       </p>
     </div>
   );
@@ -387,10 +395,11 @@ function CheckGitAiStep({
   onNavigateInstall: () => void;
   onRecheck: () => void;
 }) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="flex items-center gap-2 rounded-md border border-border p-4 text-sm text-slate-500">
-        <Loader2 className="h-4 w-4 animate-spin" /> 正在检查 git-ai 是否已安装…
+        <Loader2 className="h-4 w-4 animate-spin" /> {t("repoSetupGuide.gitAi.checking")}
       </div>
     );
   }
@@ -398,10 +407,10 @@ function CheckGitAiStep({
     return (
       <div className="space-y-2 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/40">
         <div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-200">
-          <CheckCircle2 className="h-4 w-4" /> 已检测到 git-ai CLI
+          <CheckCircle2 className="h-4 w-4" /> {t("repoSetupGuide.gitAi.detectedTitle")}
         </div>
         <p className="text-emerald-900/80 dark:text-emerald-100/80">
-          后续 Studio 会把 git-ai 作为子进程调用解析每次 commit。直接进下一步。
+          {t("repoSetupGuide.gitAi.detectedBody")}
         </p>
       </div>
     );
@@ -409,11 +418,10 @@ function CheckGitAiStep({
   return (
     <div className="space-y-3 rounded-md border border-rose-200 bg-rose-50 p-4 text-sm dark:border-rose-900 dark:bg-rose-950/40">
       <div className="flex items-center gap-2 font-medium text-rose-700 dark:text-rose-200">
-        <XCircle className="h-4 w-4" /> 未检测到 git-ai 配置
+        <XCircle className="h-4 w-4" /> {t("repoSetupGuide.gitAi.missingTitle")}
       </div>
       <p className="text-rose-900/80 dark:text-rose-100/80">
-        Studio 是 git-ai 的客户端,没有它就拿不到 AI 归因数据。先去 Install 页一键安装,
-        装好后回来点「重新检查」继续。
+        {t("repoSetupGuide.gitAi.missingBody")}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -421,14 +429,14 @@ function CheckGitAiStep({
           onClick={onNavigateInstall}
           className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-rose-500"
         >
-          <Wrench className="h-3.5 w-3.5" /> 前往安装页
+          <Wrench className="h-3.5 w-3.5" /> {t("repoSetupGuide.gitAi.goInstall")}
         </button>
         <button
           type="button"
           onClick={onRecheck}
           className="rounded-md border border-rose-200 px-2.5 py-1.5 text-xs hover:bg-white dark:border-rose-900 dark:hover:bg-rose-950"
         >
-          重新检查
+          {t("repoSetupGuide.recheck")}
         </button>
       </div>
     </div>
@@ -454,12 +462,13 @@ function RepoStep({
   onScan: () => void;
   onSelect: (repo: RepoEntry) => void;
 }) {
+  const { t } = useTranslation();
   const handlePick = async () => {
     try {
-      const picked = await pickDirectory("选择代码根目录");
+      const picked = await pickDirectory(t("repoSetupGuide.repo.pickDialogTitle"));
       if (picked) onRootChange(picked);
     } catch (e) {
-      toast.error("打开目录选择器失败", { description: (e as Error).message });
+      toast.error(t("repoSetupGuide.toast.pickDirFailed"), { description: (e as Error).message });
     }
   };
   return (
@@ -471,10 +480,14 @@ function RepoStep({
           onClick={handlePick}
           className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
         >
-          <FolderOpen className="h-3.5 w-3.5" /> 选择目录
+          <FolderOpen className="h-3.5 w-3.5" /> {t("repoSetupGuide.repo.pickDir")}
         </button>
         <div className="flex-1 truncate rounded-md border border-dashed border-slate-200 px-3 py-1.5 font-mono text-xs text-slate-600 dark:border-border dark:text-slate-300">
-          {root.trim() ? root : <span className="text-slate-400">未选择目录</span>}
+          {root.trim() ? (
+            root
+          ) : (
+            <span className="text-slate-400">{t("repoSetupGuide.repo.noDirPicked")}</span>
+          )}
         </div>
         <button
           type="button"
@@ -487,27 +500,26 @@ function RepoStep({
           ) : (
             <Search className="h-3.5 w-3.5" />
           )}
-          扫描
+          {t("repoSetupGuide.repo.scan")}
         </button>
       </div>
       {/* Fallback:手动粘路径(默认折叠,极端情况绕过 Tauri dialog 卡顿) */}
       <details className="text-[11px] text-slate-500">
-        <summary className="cursor-pointer">直接粘路径(高级)</summary>
+        <summary className="cursor-pointer">{t("repoSetupGuide.repo.pasteAdvanced")}</summary>
         <input
           value={root}
           onChange={(e) => onRootChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") onScan();
           }}
-          placeholder="例如 D:\script"
+          placeholder={t("repoSetupGuide.repo.pathPlaceholder")}
           className="mt-1 w-full rounded-md border border-slate-200 px-3 py-1.5 font-mono text-xs dark:border-border dark:bg-card"
         />
       </details>
       <div className="max-h-64 overflow-y-auto rounded-md border border-border">
         {repos.length === 0 ? (
           <div className="px-4 py-8 text-center text-xs text-slate-500">
-            点上方「选择目录」选根目录后,点「扫描」会列出该目录下发现的 Git
-            仓库;选中后自动进入下一步。
+            {t("repoSetupGuide.repo.emptyHint")}
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -524,7 +536,7 @@ function RepoStep({
                   disabled={selectingPath === repo.path}
                   className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary/15 disabled:opacity-50 dark:bg-primary/10 dark:text-primary"
                 >
-                  选中
+                  {t("repoSetupGuide.repo.select")}
                 </button>
               </li>
             ))}
@@ -548,10 +560,11 @@ function CheckHookStep({
   onNavigateHooks: () => void;
   onRecheck: () => void;
 }) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="flex items-center gap-2 rounded-md border border-border p-4 text-sm text-slate-500">
-        <Loader2 className="h-4 w-4 animate-spin" /> 正在读取 hook 配置…
+        <Loader2 className="h-4 w-4 animate-spin" /> {t("repoSetupGuide.hook.checking")}
       </div>
     );
   }
@@ -559,10 +572,10 @@ function CheckHookStep({
     return (
       <div className="space-y-2 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/40">
         <div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-200">
-          <CheckCircle2 className="h-4 w-4" /> hook 已配置(模式:{mode})
+          <CheckCircle2 className="h-4 w-4" /> {t("repoSetupGuide.hook.configuredTitle", { mode })}
         </div>
         <p className="text-emerald-900/80 dark:text-emerald-100/80">
-          AI agent 编辑文件时会自动写入 checkpoint,Dashboard 数据已经能正常采集。
+          {t("repoSetupGuide.hook.configuredBody")}
         </p>
       </div>
     );
@@ -570,11 +583,13 @@ function CheckHookStep({
   return (
     <div className="space-y-3 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950/40">
       <div className="flex items-center gap-2 font-medium text-amber-800 dark:text-amber-200">
-        <XCircle className="h-4 w-4" /> hook 尚未配置(当前 mode = {mode ?? "未知"})
+        <XCircle className="h-4 w-4" />{" "}
+        {t("repoSetupGuide.hook.unconfiguredTitle", {
+          mode: mode ?? t("repoSetupGuide.hook.modeUnknown"),
+        })}
       </div>
       <p className="text-amber-900/80 dark:text-amber-100/80">
-        AI agent 编辑文件需要 hook 配合才能被 git-ai 捕获。先去 Hooks 页配置(官方模式跨平台,
-        推荐),改完<strong>必须重启 AI agent 与终端</strong> 才生效。
+        {t("repoSetupGuide.hook.unconfiguredBody")}
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <button
@@ -582,14 +597,14 @@ function CheckHookStep({
           onClick={onNavigateHooks}
           className="inline-flex items-center gap-1 rounded-md bg-amber-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-amber-500"
         >
-          <Wrench className="h-3.5 w-3.5" /> 前往 Hooks 配置页
+          <Wrench className="h-3.5 w-3.5" /> {t("repoSetupGuide.hook.goHooks")}
         </button>
         <button
           type="button"
           onClick={onRecheck}
           className="rounded-md border border-amber-200 px-2.5 py-1.5 text-xs hover:bg-white dark:border-amber-900 dark:hover:bg-amber-950"
         >
-          重新检查
+          {t("repoSetupGuide.recheck")}
         </button>
       </div>
     </div>
@@ -607,24 +622,25 @@ function DoneStep({
   onGoDashboard: () => void;
   onGoSettings: () => void;
 }) {
+  const { t } = useTranslation();
   const n = settings?.notifications;
   // 3 项进阶配置概览。默认全关,所以新用户一眼能看到自己还能开什么。
   // 实际配置统一在 Settings → 守护与通知,这里只做"知会 + 跳转"。
   const items: Array<{ label: string; enabled: boolean; hint: string }> = [
     {
-      label: "cc-switch 守护",
+      label: t("repoSetupGuide.done.items.ccSwitch.label"),
       enabled: n?.cc_switch_auto_repair ?? false,
-      hint: "cc-switch 切换 Codex / Claude profile 时自动恢复 git-ai hook。",
+      hint: t("repoSetupGuide.done.items.ccSwitch.hint"),
     },
     {
-      label: "低 AI 占比提醒",
+      label: t("repoSetupGuide.done.items.lowAiShare.label"),
       enabled: n?.low_ai_share?.enabled ?? false,
-      hint: "近 7 天 AI 占比低于阈值(默认 80%)时弹 toast 并发送 OS 通知。",
+      hint: t("repoSetupGuide.done.items.lowAiShare.hint"),
     },
     {
-      label: "daemon 异常告警",
+      label: t("repoSetupGuide.done.items.daemonUnhealthy.label"),
       enabled: n?.daemon_unhealthy_alert ?? false,
-      hint: "daemon lock 阻塞导致 hook 全线挂时通过 OS 通知中心提醒。",
+      hint: t("repoSetupGuide.done.items.daemonUnhealthy.hint"),
     },
   ];
   return (
@@ -632,35 +648,33 @@ function DoneStep({
       {/* 顶部 — 完成确认 + 进入 Dashboard */}
       <div className="space-y-2 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/40">
         <div className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-200">
-          <CheckCircle2 className="h-4 w-4" /> 配置完成
+          <CheckCircle2 className="h-4 w-4" /> {t("repoSetupGuide.done.completeTitle")}
         </div>
         <p className="text-emerald-900/80 dark:text-emerald-100/80">
-          现在可以进入 Dashboard 看每次 commit 的 AI 归因数据了。
+          {t("repoSetupGuide.done.completeBody")}
         </p>
         <button
           type="button"
           onClick={onGoDashboard}
           className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
         >
-          进入 Dashboard
+          {t("repoSetupGuide.done.goDashboard")}
         </button>
       </div>
 
       {/* 进阶:3 项监控告警(默认全关) */}
       <div className="space-y-2 rounded-md border border-border bg-card p-4">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-sm font-medium">进阶:3 项监控告警(默认全关)</div>
+          <div className="text-sm font-medium">{t("repoSetupGuide.done.advancedTitle")}</div>
           <button
             type="button"
             onClick={onGoSettings}
             className="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
           >
-            前往 Settings → 守护与通知
+            {t("repoSetupGuide.done.goSettings")}
           </button>
         </div>
-        <p className="text-[11px] text-slate-500">
-          按需开,关也无所谓 — 数据采集本身只依赖 hook,不依赖这些告警。
-        </p>
+        <p className="text-[11px] text-slate-500">{t("repoSetupGuide.done.advancedHint")}</p>
         <ul className="space-y-1.5">
           {items.map((it) => (
             <li
@@ -674,7 +688,9 @@ function DoneStep({
                     : "mt-0.5 inline-flex h-4 shrink-0 items-center gap-0.5 rounded-full bg-slate-100 px-1.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                 }
               >
-                {it.enabled ? "已开" : "未开"}
+                {it.enabled
+                  ? t("repoSetupGuide.done.statusOn")
+                  : t("repoSetupGuide.done.statusOff")}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-medium">{it.label}</div>
@@ -685,10 +701,7 @@ function DoneStep({
         </ul>
       </div>
 
-      <p className="text-[11px] text-slate-400">
-        下次想再走一遍引导:Settings → 通用 → 「重新查看引导」。遇到问题:Diagnostic 页有自动检查清单
-        + Logs 页有 git-ai debug 实时输出。
-      </p>
+      <p className="text-[11px] text-slate-400">{t("repoSetupGuide.done.footerHint")}</p>
     </div>
   );
 }
