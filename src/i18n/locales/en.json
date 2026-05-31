@@ -943,6 +943,114 @@
       "hint": "Takes effect immediately; the choice is saved in local localStorage.",
       "zh_CN": "简体中文",
       "en": "English"
+    },
+    "tabs": {
+      "general": "General",
+      "monitor": "Monitoring & notifications",
+      "data": "Data & integrations"
+    },
+    "closeBehavior": {
+      "toastTray": "Switched to minimize to tray",
+      "toastExit": "Switched to quit on close",
+      "title": "When closing the window",
+      "exit": "Quit the app (default)",
+      "tray": "Minimize to system tray",
+      "hint": "With \"Minimize to tray\" selected, clicking the window's X won't quit the process; left-click the tray icon or choose \"Show main window\" from the tray menu to restore. The tray menu always provides a \"Quit\" entry."
+    },
+    "toast": {
+      "saveFailed": "Failed to save"
+    },
+    "autoLaunch": {
+      "toastEnabled": "Launch at login enabled",
+      "toastDisabled": "Launch at login disabled",
+      "toastFailed": "Failed to set launch at login",
+      "title": "Launch at login",
+      "hint": "When enabled, Git AI Studio starts automatically when you log in (pair it with \"When closing the window → Minimize to tray\" to keep it running in the background).",
+      "subHint": "The source of truth is the OS login item; turn this off before uninstalling the app to avoid leaving a stale startup entry.",
+      "toggleAria": "Toggle launch at login"
+    },
+    "ccSwitch": {
+      "toastEnabled": "cc-switch guard enabled",
+      "toastDisabled": "cc-switch guard disabled",
+      "title": "cc-switch guard",
+      "hint": "When cc-switch swaps a Codex profile it overwrites ~/.codex/config.toml wholesale, so the hooks section git-ai wrote is inevitably lost. When enabled, Studio watches that file for changes and, if the hook is missing, automatically runs git-ai install-hooks to restore it incrementally (toml_edit does a field-level merge and won't clash with the [model_providers.*] fields cc-switch writes).",
+      "subHint": "Off by default. Studio won't modify these files on your behalf without explicit permission.",
+      "toggleAria": "Toggle cc-switch guard"
+    },
+    "lowAi": {
+      "toastEnabled": "Low AI share reminder enabled",
+      "toastDisabled": "Low AI share reminder disabled",
+      "toastThresholdSaved": "Threshold saved ({{n}}%)",
+      "toastEmailsSaved": "Target emails saved",
+      "toastEmailsSaveFailed": "Failed to save target emails",
+      "toastRemindIntervalSaved": "Remind interval saved ({{minutes}} min)",
+      "toastRemindIntervalSaveFailed": "Failed to save remind interval",
+      "toastDismissMinutesSaved": "Snooze duration saved ({{minutes}} min)",
+      "toastDismissMinutesSaveFailed": "Failed to save snooze duration",
+      "toastRealtimeEnabled": "Realtime trigger enabled (pushes 1–3s after commit)",
+      "toastRealtimeDisabled": "Realtime trigger disabled (back to 15-minute polling)",
+      "toastRealtimeSaveFailed": "Failed to save realtime toggle",
+      "thresholdRangeError": "Threshold must be an integer between 1 and 100",
+      "previewRepoName": "Example repo",
+      "toastReminderRestored": "Low AI share reminders restored",
+      "rulesAria": "{{title}} trigger rules",
+      "toggleAria": "Toggle low AI share reminder",
+      "customThreshold": "Custom",
+      "saveThreshold": "Save",
+      "realtimeLabel": "Watch file changes in realtime",
+      "realtimeHint": "When off, it checks every 15 minutes; when on, it pushes within 1–3 seconds after a commit completes (the backend watches refs/notes/ai via fsnotify). Existing cooldowns (5 min after a repo switch / the configured remind interval) apply in both modes.",
+      "realtimeToggleAria": "Toggle realtime file watching",
+      "currentAutoEmail": "Current auto email:",
+      "autoEmailUnavailable": "Not readable; will count the whole repo",
+      "saveEmails": "Save"
+    },
+    "daemon": {
+      "toastAlertEnabled": "Daemon alert enabled",
+      "toastAlertDisabled": "Daemon alert disabled",
+      "toastSilenceReset": "Daemon silence reset; you'll be reminded again the next time an issue is detected",
+      "title": "git-ai daemon health alert",
+      "hint": "When the background probe detects a daemon lock issue twice in a row, it alerts you via the OS notification center (macOS Notification Center / Linux libnotify / Windows toast).",
+      "subHint": "When off, the 30s polling stops and no longer spawns tasklist subprocesses.",
+      "toggleAria": "Toggle git-ai daemon health alert",
+      "resetSilence": "Reset daemon snooze"
+    },
+    "pageTitle": "Settings",
+    "pageSubtitle": "App appearance, data storage, and key configuration entry points.",
+    "appearance": {
+      "title": "Appearance theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Follow system",
+      "systemHint": "With \"Follow system\" selected, the app watches the OS light/dark preference and syncs automatically."
+    },
+    "scanRoots": {
+      "title": "Scan roots (shared with the Repo page)",
+      "manage": "Manage →",
+      "empty": "No scan roots configured yet"
+    },
+    "notifications": {
+      "title": "Notifications"
+    },
+    "gitAiUpdate": {
+      "title": "git-ai auto-update",
+      "statusLabel": "Currently: {{status}}",
+      "statusEnabled": "Enabled (default)",
+      "statusDisabled": "Disabled (disable_auto_updates=true)",
+      "goEdit": "Go edit →"
+    },
+    "onboarding": {
+      "title": "First-run guide",
+      "hint": "Reopen the 5-step setup wizard: introduce Studio's capabilities, check the git-ai install, pick a repo, verify the hook, and wrap up. Uninstalling the client doesn't clear ~/.git-ai-studio/config.json, so the guide won't reappear by default after a reinstall — click here when you need it.",
+      "reopen": "Reopen guide"
+    },
+    "about": {
+      "title": "About",
+      "sourceCode": "Source code:",
+      "privacy": "All data is processed locally and never uploaded."
+    },
+    "effectiveIgnore": {
+      "repoPrefix": "Repo:",
+      "patternCount": "· {{count}} patterns"
     }
   },
   "repo": {

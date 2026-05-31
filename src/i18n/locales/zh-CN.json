@@ -943,6 +943,114 @@
       "hint": "切换后立即生效;选择会保存在本地 localStorage。",
       "zh_CN": "简体中文",
       "en": "English"
+    },
+    "tabs": {
+      "general": "通用",
+      "monitor": "守护与通知",
+      "data": "数据与集成"
+    },
+    "closeBehavior": {
+      "toastTray": "已切换为最小化到托盘",
+      "toastExit": "已切换为关闭即退出",
+      "title": "关闭窗口时",
+      "exit": "退出应用(默认)",
+      "tray": "最小化到系统托盘",
+      "hint": "选「最小化到托盘」后,点窗口 X 不退出进程;左键点托盘图标或从托盘菜单选「显示主窗口」恢复。托盘菜单始终提供「退出」入口。"
+    },
+    "toast": {
+      "saveFailed": "保存失败"
+    },
+    "autoLaunch": {
+      "toastEnabled": "已开启开机自启",
+      "toastDisabled": "已关闭开机自启",
+      "toastFailed": "设置开机自启失败",
+      "title": "开机自启",
+      "hint": "开启后,登录系统时自动启动 Git AI Studio(配合「关闭窗口时 → 最小化到托盘」可常驻后台)。",
+      "subHint": "真值为操作系统登录项,卸载应用前请先关闭此项,避免残留启动项。",
+      "toggleAria": "开启开机自启"
+    },
+    "ccSwitch": {
+      "toastEnabled": "cc-switch 守护已启用",
+      "toastDisabled": "cc-switch 守护已停用",
+      "title": "cc-switch 守护",
+      "hint": "cc-switch 切换 Codex profile 时会整体覆盖 ~/.codex/config.toml,git-ai 写入的 hooks 段必然丢失。开启后,studio 监听该文件变化,发现 hook 缺失则自动调 git-ai install-hooks 增量恢复(toml_edit 字段级合并,不冲突 cc-switch 写入的 [model_providers.*] 等字段)。",
+      "subHint": "默认关闭。无明确授权前 studio 不会替用户改这些文件。",
+      "toggleAria": "开启 cc-switch 守护"
+    },
+    "lowAi": {
+      "toastEnabled": "低 AI 占比提醒已开启",
+      "toastDisabled": "低 AI 占比提醒已关闭",
+      "toastThresholdSaved": "阈值已保存({{n}}%)",
+      "toastEmailsSaved": "关注邮箱已保存",
+      "toastEmailsSaveFailed": "保存关注邮箱失败",
+      "toastRemindIntervalSaved": "提醒间隔已保存({{minutes}} 分钟)",
+      "toastRemindIntervalSaveFailed": "保存提醒间隔失败",
+      "toastDismissMinutesSaved": "静默时长已保存({{minutes}} 分钟)",
+      "toastDismissMinutesSaveFailed": "保存静默时长失败",
+      "toastRealtimeEnabled": "实时触发已开启(commit 后 1-3s 推送)",
+      "toastRealtimeDisabled": "实时触发已关闭(回到 15 分钟轮询)",
+      "toastRealtimeSaveFailed": "保存实时开关失败",
+      "thresholdRangeError": "阈值需为 1–100 的整数",
+      "previewRepoName": "示例仓库",
+      "toastReminderRestored": "已恢复低 AI 占比提醒",
+      "rulesAria": "{{title}} 触发规则",
+      "toggleAria": "开启低 AI 占比提醒",
+      "customThreshold": "自定义",
+      "saveThreshold": "保存",
+      "realtimeLabel": "实时监听文件变化",
+      "realtimeHint": "关闭后每 15 分钟检查一次,开启时 commit 完成后 1-3 秒内推送(后端 fsnotify 监听 refs/notes/ai)。既有冷却(切仓 5min / 提醒间隔 6h)在两种模式下都生效。",
+      "realtimeToggleAria": "开启实时监听文件变化",
+      "currentAutoEmail": "当前自动邮箱:",
+      "autoEmailUnavailable": "未读取到,将按仓库整体统计",
+      "saveEmails": "保存"
+    },
+    "daemon": {
+      "toastAlertEnabled": "daemon 异常告警已开启",
+      "toastAlertDisabled": "daemon 异常告警已关闭",
+      "toastSilenceReset": "已重置 daemon 静默,下次探测到异常会重新提醒",
+      "title": "git-ai daemon 异常告警",
+      "hint": "后台连续 2 次探测到 daemon lock 异常时,通过 OS 通知中心提醒(macOS 通知中心 / Linux libnotify / Windows toast)。",
+      "subHint": "关闭后停止 30s 轮询,不再消耗 tasklist 子进程。",
+      "toggleAria": "开启 git-ai daemon 异常告警",
+      "resetSilence": "重置 daemon 已 X 静默"
+    },
+    "pageTitle": "设置",
+    "pageSubtitle": "应用外观、数据存储、关键配置入口。",
+    "appearance": {
+      "title": "外观主题",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统",
+      "systemHint": "切换\"跟随系统\"后,会监听操作系统的浅色/深色偏好并自动同步。"
+    },
+    "scanRoots": {
+      "title": "扫描根目录(共享自 Repo 页)",
+      "manage": "前往管理 →",
+      "empty": "尚未设置任何扫描根目录"
+    },
+    "notifications": {
+      "title": "通知"
+    },
+    "gitAiUpdate": {
+      "title": "git-ai 自动更新",
+      "statusLabel": "当前:{{status}}",
+      "statusEnabled": "启用(默认)",
+      "statusDisabled": "已禁用(disable_auto_updates=true)",
+      "goEdit": "前往修改 →"
+    },
+    "onboarding": {
+      "title": "首次引导",
+      "hint": "重新打开 5 步上手向导:介绍 Studio 能力、检查 git-ai 安装、选仓库、检查 hook、收尾。卸载客户端不会清 ~/.git-ai-studio/config.json,所以重装后默认不会再弹引导;需要时点这里。",
+      "reopen": "重新查看引导"
+    },
+    "about": {
+      "title": "关于",
+      "sourceCode": "源代码:",
+      "privacy": "所有数据均在本机解析,不会上传。"
+    },
+    "effectiveIgnore": {
+      "repoPrefix": "仓库:",
+      "patternCount": "· 共 {{count}} 条"
     }
   },
   "repo": {

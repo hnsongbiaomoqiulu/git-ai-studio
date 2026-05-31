@@ -66,10 +66,10 @@ import { useRouter } from "../router";
 
 type SettingsTabId = "general" | "monitor" | "data";
 
-const SETTINGS_TABS: Array<{ id: SettingsTabId; label: string }> = [
-  { id: "general", label: "通用" },
-  { id: "monitor", label: "守护与通知" },
-  { id: "data", label: "数据与集成" },
+const SETTINGS_TABS: Array<{ id: SettingsTabId; labelKey: string }> = [
+  { id: "general", labelKey: "settings.tabs.general" },
+  { id: "monitor", labelKey: "settings.tabs.monitor" },
+  { id: "data", labelKey: "settings.tabs.data" },
 ];
 
 export default function SettingsPage() {
@@ -109,9 +109,14 @@ export default function SettingsPage() {
     mutationFn: (b: CloseBehavior) => setAppSettings({ close_behavior: b }),
     onSuccess: (_, b) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(b === "tray" ? "已切换为最小化到托盘" : "已切换为关闭即退出");
+      toast.success(
+        b === "tray"
+          ? t("settings.closeBehavior.toastTray")
+          : t("settings.closeBehavior.toastExit"),
+      );
     },
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
   const closeBehavior: CloseBehavior =
     (settingsQ.data?.close_behavior as CloseBehavior | null) ?? "exit";
@@ -125,9 +130,12 @@ export default function SettingsPage() {
     mutationFn: (enable: boolean) => setAutoLaunch(enable),
     onSuccess: (enabled) => {
       qc.invalidateQueries({ queryKey: ["auto_launch_status"] });
-      toast.success(enabled ? "已开启开机自启" : "已关闭开机自启");
+      toast.success(
+        enabled ? t("settings.autoLaunch.toastEnabled") : t("settings.autoLaunch.toastDisabled"),
+      );
     },
-    onError: (e) => toast.error("设置开机自启失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.autoLaunch.toastFailed"), { description: (e as Error).message }),
   });
 
   // 注:cc_switch_auto_repair 已搬到 notifications 嵌套结构;读取兼容旧顶层字段(后端会迁移)。
@@ -139,9 +147,12 @@ export default function SettingsPage() {
     mutationFn: (enable: boolean) => setAppSettings({ cc_switch_auto_repair: enable }),
     onSuccess: (_, enable) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(enable ? "cc-switch 守护已启用" : "cc-switch 守护已停用");
+      toast.success(
+        enable ? t("settings.ccSwitch.toastEnabled") : t("settings.ccSwitch.toastDisabled"),
+      );
     },
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
 
   // ===== 低 AI 占比提醒 =====
@@ -166,42 +177,51 @@ export default function SettingsPage() {
     mutationFn: (enable: boolean) => setAppSettings({ low_ai_share_enabled: enable }),
     onSuccess: (_, enable) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(enable ? "低 AI 占比提醒已开启" : "低 AI 占比提醒已关闭");
+      toast.success(enable ? t("settings.lowAi.toastEnabled") : t("settings.lowAi.toastDisabled"));
     },
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
   const lowAiThresholdM = useMutation({
     mutationFn: (n: number) => setAppSettings({ low_ai_share_threshold_percent: n }),
     onSuccess: (_, n) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(`阈值已保存(${n}%)`);
+      toast.success(t("settings.lowAi.toastThresholdSaved", { n }));
     },
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
   const lowAiTargetEmailsM = useMutation({
     mutationFn: (emails: string[]) => setAppSettings({ low_ai_share_target_emails: emails }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success("关注邮箱已保存");
+      toast.success(t("settings.lowAi.toastEmailsSaved"));
     },
-    onError: (e) => toast.error("保存关注邮箱失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.lowAi.toastEmailsSaveFailed"), { description: (e as Error).message }),
   });
   const lowAiRemindIntervalM = useMutation({
     mutationFn: (minutes: number) =>
       setAppSettings({ low_ai_share_remind_interval_minutes: minutes }),
     onSuccess: (_, minutes) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(`提醒间隔已保存(${minutes} 分钟)`);
+      toast.success(t("settings.lowAi.toastRemindIntervalSaved", { minutes }));
     },
-    onError: (e) => toast.error("保存提醒间隔失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.lowAi.toastRemindIntervalSaveFailed"), {
+        description: (e as Error).message,
+      }),
   });
   const lowAiDismissMinutesM = useMutation({
     mutationFn: (minutes: number) => setAppSettings({ low_ai_share_dismiss_minutes: minutes }),
     onSuccess: (_, minutes) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(`静默时长已保存(${minutes} 分钟)`);
+      toast.success(t("settings.lowAi.toastDismissMinutesSaved", { minutes }));
     },
-    onError: (e) => toast.error("保存静默时长失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.lowAi.toastDismissMinutesSaveFailed"), {
+        description: (e as Error).message,
+      }),
   });
   // 实时触发开关:null = 走前端默认 true(向后兼容老配置无此字段的场景)
   const lowAiRealtime = lowAi?.realtime_enabled ?? true;
@@ -210,10 +230,15 @@ export default function SettingsPage() {
     onSuccess: (_, enable) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
       toast.success(
-        enable ? "实时触发已开启(commit 后 1-3s 推送)" : "实时触发已关闭(回到 15 分钟轮询)",
+        enable
+          ? t("settings.lowAi.toastRealtimeEnabled")
+          : t("settings.lowAi.toastRealtimeDisabled"),
       );
     },
-    onError: (e) => toast.error("保存实时开关失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.lowAi.toastRealtimeSaveFailed"), {
+        description: (e as Error).message,
+      }),
   });
   const [targetEmailsDraft, setTargetEmailsDraft] = useState("");
   useEffect(() => {
@@ -229,7 +254,7 @@ export default function SettingsPage() {
   const commitCustomThreshold = () => {
     const n = Math.round(Number(customThresholdDraft));
     if (!Number.isFinite(n) || n < 1 || n > 100) {
-      toast.error("阈值需为 1–100 的整数");
+      toast.error(t("settings.lowAi.thresholdRangeError"));
       return;
     }
     lowAiThresholdM.mutate(n);
@@ -270,7 +295,7 @@ export default function SettingsPage() {
           title={t("lowAiShare.toastTitleWithRepoTemplate", {
             pct: exampleShare,
             threshold: lowAiThreshold,
-            repoName: "示例仓库",
+            repoName: t("settings.lowAi.previewRepoName"),
           })}
           description={t("lowAiShare.toastDescription")}
           onView={() => {}}
@@ -288,9 +313,12 @@ export default function SettingsPage() {
     mutationFn: (enable: boolean) => setAppSettings({ daemon_unhealthy_alert: enable }),
     onSuccess: (_, enable) => {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
-      toast.success(enable ? "daemon 异常告警已开启" : "daemon 异常告警已关闭");
+      toast.success(
+        enable ? t("settings.daemon.toastAlertEnabled") : t("settings.daemon.toastAlertDisabled"),
+      );
     },
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
   // ===== 桌面宠物(Ink pet)=====
   const petEnabled = settingsQ.data?.pet?.enabled ?? false;
@@ -307,13 +335,15 @@ export default function SettingsPage() {
       qc.invalidateQueries({ queryKey: ["app_settings"] });
       toast.success(enable ? i18n.t("pet.toast.enabled") : i18n.t("pet.toast.disabled"));
     },
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
   // 主题 / 大小 / 透明度 / 提醒间隔共用一个增量 patch mutation。
   const petPatchM = useMutation({
     mutationFn: (patch: AppSettingsPatch) => setAppSettings(patch),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["app_settings"] }),
-    onError: (e) => toast.error("保存失败", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t("settings.toast.saveFailed"), { description: (e as Error).message }),
   });
   // 分段按钮统一样式(选中高亮 / 未选中描边)。
   const segCls = (active: boolean) =>
@@ -324,13 +354,13 @@ export default function SettingsPage() {
   const resetDaemonSilence = () => {
     clearDaemonSilence();
     window.dispatchEvent(new Event(DAEMON_RESET_EVENT));
-    toast.success("已重置 daemon 静默,下次探测到异常会重新提醒");
+    toast.success(t("settings.daemon.toastSilenceReset"));
   };
 
   const resetLowAiSilence = () => {
     clearLowAiShareSilence(null);
     window.dispatchEvent(new Event(LOW_AI_SHARE_RESET_EVENT));
-    toast.success("已恢复低 AI 占比提醒");
+    toast.success(t("settings.lowAi.toastReminderRestored"));
   };
 
   const autoUpdateEnabled = !(cfgQ.data?.disable_auto_updates ?? false);
@@ -408,27 +438,27 @@ export default function SettingsPage() {
   return (
     <div className="space-y-4 p-6">
       <div>
-        <h1 className="text-xl font-semibold">设置</h1>
-        <p className="mt-0.5 text-xs text-slate-500">应用外观、数据存储、关键配置入口。</p>
+        <h1 className="text-xl font-semibold">{t("settings.pageTitle")}</h1>
+        <p className="mt-0.5 text-xs text-slate-500">{t("settings.pageSubtitle")}</p>
       </div>
 
       {/* Tab 切换栏。用 hidden className 控制可见性而非条件渲染,切 tab 时组件保持 mount,
           表单 draft / mutation 状态不丢失。 */}
       <nav className="flex items-center gap-1 border-b border-border">
-        {SETTINGS_TABS.map((t) => (
+        {SETTINGS_TABS.map((it) => (
           <button
-            key={t.id}
+            key={it.id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => setTab(it.id)}
             className={
-              tab === t.id
+              tab === it.id
                 ? "border-b-2 border-primary px-3 py-2 text-sm font-medium text-primary"
                 : "border-b-2 border-transparent px-3 py-2 text-sm text-slate-500 hover:text-foreground"
             }
-            aria-selected={tab === t.id}
+            aria-selected={tab === it.id}
             role="tab"
           >
-            {t.label}
+            {t(it.labelKey as never)}
           </button>
         ))}
       </nav>
@@ -436,22 +466,20 @@ export default function SettingsPage() {
       {/* 外观 — general */}
       <section className={`${tabClass("general")}rounded-lg border border-border bg-card p-4`}>
         <h2 className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <Palette className="h-4 w-4 text-slate-500" /> 外观主题
+          <Palette className="h-4 w-4 text-slate-500" /> {t("settings.appearance.title")}
         </h2>
         <RadioGroup value={theme} onValueChange={(v: Theme) => setTheme(v)}>
           <RadioItem value="light">
-            <Sun className="h-3.5 w-3.5" /> 浅色
+            <Sun className="h-3.5 w-3.5" /> {t("settings.appearance.light")}
           </RadioItem>
           <RadioItem value="dark">
-            <Moon className="h-3.5 w-3.5" /> 深色
+            <Moon className="h-3.5 w-3.5" /> {t("settings.appearance.dark")}
           </RadioItem>
           <RadioItem value="system">
-            <RefreshCw className="h-3.5 w-3.5" /> 跟随系统
+            <RefreshCw className="h-3.5 w-3.5" /> {t("settings.appearance.system")}
           </RadioItem>
         </RadioGroup>
-        <p className="mt-2 text-[11px] text-slate-400">
-          切换"跟随系统"后,会监听操作系统的浅色/深色偏好并自动同步。
-        </p>
+        <p className="mt-2 text-[11px] text-slate-400">{t("settings.appearance.systemHint")}</p>
       </section>
 
       {/* 界面语言 — general */}
@@ -476,23 +504,20 @@ export default function SettingsPage() {
       {/* 关闭窗口时的行为 — general */}
       <section className={`${tabClass("general")}rounded-lg border border-border bg-card p-4`}>
         <h2 className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <Minimize2 className="h-4 w-4 text-slate-500" /> 关闭窗口时
+          <Minimize2 className="h-4 w-4 text-slate-500" /> {t("settings.closeBehavior.title")}
         </h2>
         <RadioGroup
           value={closeBehavior}
           onValueChange={(v: CloseBehavior) => closeBehaviorM.mutate(v)}
         >
           <RadioItem value="exit">
-            <LogOut className="h-3.5 w-3.5" /> 退出应用(默认)
+            <LogOut className="h-3.5 w-3.5" /> {t("settings.closeBehavior.exit")}
           </RadioItem>
           <RadioItem value="tray">
-            <Minimize2 className="h-3.5 w-3.5" /> 最小化到系统托盘
+            <Minimize2 className="h-3.5 w-3.5" /> {t("settings.closeBehavior.tray")}
           </RadioItem>
         </RadioGroup>
-        <p className="mt-2 text-[11px] text-slate-400">
-          选「最小化到托盘」后,点窗口 X 不退出进程;左键点托盘图标或从托盘菜单选「显示主窗口」恢复。
-          托盘菜单始终提供「退出」入口。
-        </p>
+        <p className="mt-2 text-[11px] text-slate-400">{t("settings.closeBehavior.hint")}</p>
       </section>
 
       {/* 开机自启(应用本体) — general */}
@@ -500,20 +525,16 @@ export default function SettingsPage() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="flex items-center gap-2 text-sm font-medium">
-              <Power className="h-4 w-4 text-slate-500" /> 开机自启
+              <Power className="h-4 w-4 text-slate-500" /> {t("settings.autoLaunch.title")}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              开启后,登录系统时自动启动 Git AI Studio(配合「关闭窗口时 → 最小化到托盘」可常驻后台)。
-            </p>
-            <p className="mt-1 text-[11px] text-slate-400">
-              真值为操作系统登录项,卸载应用前请先关闭此项,避免残留启动项。
-            </p>
+            <p className="mt-1 text-xs text-slate-500">{t("settings.autoLaunch.hint")}</p>
+            <p className="mt-1 text-[11px] text-slate-400">{t("settings.autoLaunch.subHint")}</p>
           </div>
           <Switch
             checked={autoLaunchQ.data ?? false}
             onCheckedChange={(v) => autoLaunchM.mutate(v)}
             disabled={autoLaunchQ.isLoading || autoLaunchM.isPending}
-            aria-label="开启开机自启"
+            aria-label={t("settings.autoLaunch.toggleAria")}
           />
         </div>
       </section>
@@ -523,25 +544,16 @@ export default function SettingsPage() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="flex items-center gap-2 text-sm font-medium">
-              <ShieldCheck className="h-4 w-4 text-slate-500" /> cc-switch 守护
+              <ShieldCheck className="h-4 w-4 text-slate-500" /> {t("settings.ccSwitch.title")}
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              cc-switch 切换 Codex profile 时会整体覆盖{" "}
-              <code className="font-mono">~/.codex/config.toml</code>
-              ,git-ai 写入的 hooks 段必然丢失。开启后,studio 监听该文件变化,发现 hook 缺失则自动调
-              <code className="ml-1 font-mono">git-ai install-hooks</code>
-              增量恢复(toml_edit 字段级合并,不冲突 cc-switch 写入的{" "}
-              <code className="font-mono">[model_providers.*]</code> 等字段)。
-            </p>
-            <p className="mt-1 text-[11px] text-slate-400">
-              默认关闭。无明确授权前 studio 不会替用户改这些文件。
-            </p>
+            <p className="mt-1 text-xs text-slate-500">{t("settings.ccSwitch.hint")}</p>
+            <p className="mt-1 text-[11px] text-slate-400">{t("settings.ccSwitch.subHint")}</p>
           </div>
           <Switch
             checked={ccSwitchAutoRepair}
             onCheckedChange={(v) => ccSwitchM.mutate(v)}
             disabled={ccSwitchM.isPending}
-            aria-label="开启 cc-switch 守护"
+            aria-label={t("settings.ccSwitch.toggleAria")}
           />
         </div>
       </section>
@@ -666,14 +678,14 @@ export default function SettingsPage() {
       {/* 扫描根目录 — data */}
       <section className={`${tabClass("data")}rounded-lg border border-border bg-card p-4`}>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">扫描根目录(共享自 Repo 页)</h2>
+          <h2 className="text-sm font-medium">{t("settings.scanRoots.title")}</h2>
           <button onClick={() => navigate("repo")} className="text-xs text-primary hover:underline">
-            前往管理 →
+            {t("settings.scanRoots.manage")}
           </button>
         </div>
         <ul className="mt-2 space-y-0.5 text-xs">
           {(settingsQ.data?.scan_roots ?? []).length === 0 && (
-            <li className="text-slate-500">尚未设置任何扫描根目录</li>
+            <li className="text-slate-500">{t("settings.scanRoots.empty")}</li>
           )}
           {(settingsQ.data?.scan_roots ?? []).map((r) => (
             <li key={r} className="truncate font-mono text-slate-600 dark:text-slate-400">
@@ -691,7 +703,7 @@ export default function SettingsPage() {
       {/* 通知大块(低 AI / daemon)— monitor */}
       <section className={`${tabClass("monitor")}rounded-lg border border-border bg-card p-4`}>
         <h2 className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <Bell className="h-4 w-4 text-slate-500" /> 通知
+          <Bell className="h-4 w-4 text-slate-500" /> {t("settings.notifications.title")}
         </h2>
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
@@ -703,7 +715,9 @@ export default function SettingsPage() {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      aria-label={`${t("lowAiShare.settingsTitle")} 触发规则`}
+                      aria-label={t("settings.lowAi.rulesAria", {
+                        title: t("lowAiShare.settingsTitle"),
+                      })}
                       aria-haspopup="dialog"
                       className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring"
                     >
@@ -728,7 +742,7 @@ export default function SettingsPage() {
               checked={lowAiEnabled}
               onCheckedChange={(v) => lowAiEnableM.mutate(v)}
               disabled={lowAiEnableM.isPending}
-              aria-label="开启低 AI 占比提醒"
+              aria-label={t("settings.lowAi.toggleAria")}
             />
           </div>
           {lowAiEnabled && (
@@ -768,7 +782,7 @@ export default function SettingsPage() {
                         : "rounded-md border border-slate-200 px-2.5 py-1 text-xs hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
                     }
                   >
-                    自定义
+                    {t("settings.lowAi.customThreshold")}
                   </button>
                 </div>
               </div>
@@ -793,23 +807,24 @@ export default function SettingsPage() {
                     disabled={lowAiThresholdM.isPending}
                     className="rounded-md border border-primary bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:bg-primary/10 dark:text-primary"
                   >
-                    保存
+                    {t("settings.lowAi.saveThreshold")}
                   </button>
                 </div>
               )}
               <div className="flex items-start justify-between gap-3 rounded-md border border-border p-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-medium text-foreground">实时监听文件变化</div>
+                  <div className="text-xs font-medium text-foreground">
+                    {t("settings.lowAi.realtimeLabel")}
+                  </div>
                   <p className="mt-0.5 text-[11px] text-slate-500">
-                    关闭后每 15 分钟检查一次,开启时 commit 完成后 1-3 秒内推送(后端 fsnotify 监听
-                    refs/notes/ai)。既有冷却(切仓 5min / 提醒间隔 6h)在两种模式下都生效。
+                    {t("settings.lowAi.realtimeHint")}
                   </p>
                 </div>
                 <Switch
                   checked={lowAiRealtime}
                   onCheckedChange={(v) => lowAiRealtimeM.mutate(v)}
                   disabled={lowAiRealtimeM.isPending}
-                  aria-label="开启实时监听文件变化"
+                  aria-label={t("settings.lowAi.realtimeToggleAria")}
                 />
               </div>
               <div className="grid gap-2 rounded-md border border-border p-3">
@@ -823,9 +838,9 @@ export default function SettingsPage() {
                     </p>
                     {targetEmailsDraft.trim().length === 0 && (
                       <p className="mt-0.5 text-[11px] text-slate-400">
-                        当前自动邮箱:
+                        {t("settings.lowAi.currentAutoEmail")}
                         <span className="ml-1 font-mono">
-                          {gitEmailQ.data ?? "未读取到,将按仓库整体统计"}
+                          {gitEmailQ.data ?? t("settings.lowAi.autoEmailUnavailable")}
                         </span>
                       </p>
                     )}
@@ -835,7 +850,7 @@ export default function SettingsPage() {
                     disabled={lowAiTargetEmailsM.isPending}
                     className="rounded-md border border-primary bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary dark:bg-primary/10 dark:text-primary"
                   >
-                    保存
+                    {t("settings.lowAi.saveEmails")}
                   </button>
                 </div>
                 <textarea
@@ -895,20 +910,15 @@ export default function SettingsPage() {
           )}
           <div className="flex items-start justify-between gap-3 border-t border-border pt-3">
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium">git-ai daemon 异常告警</div>
-              <p className="mt-0.5 text-xs text-slate-500">
-                后台连续 2 次探测到 daemon lock 异常时,通过 OS 通知中心提醒(macOS 通知中心 / Linux
-                libnotify / Windows toast)。
-              </p>
-              <p className="mt-1 text-[11px] text-slate-400">
-                关闭后停止 30s 轮询,不再消耗 tasklist 子进程。
-              </p>
+              <div className="text-sm font-medium">{t("settings.daemon.title")}</div>
+              <p className="mt-0.5 text-xs text-slate-500">{t("settings.daemon.hint")}</p>
+              <p className="mt-1 text-[11px] text-slate-400">{t("settings.daemon.subHint")}</p>
             </div>
             <Switch
               checked={daemonAlert}
               onCheckedChange={(v) => daemonAlertM.mutate(v)}
               disabled={daemonAlertM.isPending}
-              aria-label="开启 git-ai daemon 异常告警"
+              aria-label={t("settings.daemon.toggleAria")}
             />
           </div>
           {daemonAlert && (
@@ -918,7 +928,7 @@ export default function SettingsPage() {
                 onClick={resetDaemonSilence}
                 className="rounded-md border border-slate-200 px-2.5 py-1 text-[11px] hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
               >
-                重置 daemon 已 X 静默
+                {t("settings.daemon.resetSilence")}
               </button>
             </div>
           )}
@@ -929,16 +939,20 @@ export default function SettingsPage() {
       <section className={`${tabClass("data")}rounded-lg border border-border bg-card p-4`}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-medium">git-ai 自动更新</h2>
+            <h2 className="text-sm font-medium">{t("settings.gitAiUpdate.title")}</h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              当前: {autoUpdateEnabled ? "启用(默认)" : "已禁用(disable_auto_updates=true)"}
+              {t("settings.gitAiUpdate.statusLabel", {
+                status: autoUpdateEnabled
+                  ? t("settings.gitAiUpdate.statusEnabled")
+                  : t("settings.gitAiUpdate.statusDisabled"),
+              })}
             </p>
           </div>
           <button
             onClick={() => navigate("install")}
             className="text-xs text-primary hover:underline"
           >
-            前往修改 →
+            {t("settings.gitAiUpdate.goEdit")}
           </button>
         </div>
       </section>
@@ -947,19 +961,15 @@ export default function SettingsPage() {
       <section className={`${tabClass("general")}rounded-lg border border-border bg-card p-4`}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-medium">首次引导</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              重新打开 5 步上手向导:介绍 Studio 能力、检查 git-ai 安装、选仓库、检查 hook、收尾。
-              卸载客户端不会清
-              `~/.git-ai-studio/config.json`,所以重装后默认不会再弹引导;需要时点这里。
-            </p>
+            <h2 className="text-sm font-medium">{t("settings.onboarding.title")}</h2>
+            <p className="mt-1 text-xs text-slate-500">{t("settings.onboarding.hint")}</p>
           </div>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event(REPO_SETUP_GUIDE_OPEN_EVENT))}
             className="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 dark:border-border dark:hover:bg-slate-800"
           >
-            重新查看引导
+            {t("settings.onboarding.reopen")}
           </button>
         </div>
       </section>
@@ -968,10 +978,10 @@ export default function SettingsPage() {
       <section
         className={`${tabClass("general")}rounded-lg border border-slate-200 bg-white p-4 text-xs text-slate-500 dark:border-border dark:bg-card`}
       >
-        <div className="font-medium text-foreground/80">关于</div>
+        <div className="font-medium text-foreground/80">{t("settings.about.title")}</div>
         <div className="mt-1">git-ai-studio{appVersion ? ` v${appVersion}` : ""}</div>
         <div>
-          源代码:
+          {t("settings.about.sourceCode")}
           <a
             href="https://github.com/bujueyunjian/git-ai-studio"
             target="_blank"
@@ -1015,7 +1025,7 @@ export default function SettingsPage() {
             )}
           </button>
         </div>
-        <div className="mt-1 text-[11px] text-slate-400">所有数据均在本机解析,不会上传。</div>
+        <div className="mt-1 text-[11px] text-slate-400">{t("settings.about.privacy")}</div>
       </section>
     </div>
   );
@@ -1183,8 +1193,9 @@ function EffectiveIgnoreCard() {
       {q.data?.status === "ok" && (
         <div className="mt-2">
           <div className="text-[11px] text-slate-500">
-            仓库:<span className="font-mono">{q.data.payload.repo_path}</span> · 共{" "}
-            {q.data.payload.patterns.length} 条
+            {t("settings.effectiveIgnore.repoPrefix")}
+            <span className="font-mono">{q.data.payload.repo_path}</span>{" "}
+            {t("settings.effectiveIgnore.patternCount", { count: q.data.payload.patterns.length })}
           </div>
           {q.data.payload.patterns.length === 0 ? (
             <p className="mt-2 text-xs text-slate-500">{t("effectiveIgnore.listEmpty")}</p>
