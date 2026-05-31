@@ -86,7 +86,63 @@
       "refreshNow": "立即刷新",
       "refreshing": "刷新中…",
       "cachePolicy": "本页 stats 数据自动每 30 秒视为过期,切 commit / 切仓库 / 点击刷新后会重取。git-ai stats --json 走本地子进程,不上传任何数据。"
-    }
+    },
+    "loading": "正在解析 git-ai stats…",
+    "error": "解析失败:{{message}}",
+    "filter": {
+      "searchPlaceholder": "搜索 message / sha…",
+      "noUserEmail": "未配置 git user.email,「只看我」无法过滤"
+    },
+    "summary": {
+      "truncatedTitle": "可能有更老 commit 未纳入",
+      "truncatedBadge": "(达上限 {{limit}})",
+      "failedCount": "{{count}} 条采集失败"
+    },
+    "detail": {
+      "workingTitle": "当前工作树未提交",
+      "emptyHint": "选一个 commit 看归因详情",
+      "failedNotice": "该 commit 的 git-ai stats 采集失败,下方数字为 0 桶占位,不是真实数据。刷新或查看 Diagnostic。",
+      "bucketBreakdown": "人 {{human}} · 未归因 {{unknown}} · AI {{ai}}"
+    },
+    "footer": "本机解析,不上传 · 缓存 {{seconds}}s · 每文件只显真实 AI 行数(不编造分母)",
+    "metric": {
+      "aiShare": "AI 占比",
+      "aiLines": "AI 行",
+      "totalLines": "总行",
+      "authors": "参与人"
+    },
+    "commitList": {
+      "workingLabel": "未提交改动",
+      "workingHint": "本地工作树,还没 commit",
+      "liveBadge": "实时",
+      "committedHistory": "已提交历史",
+      "commitCount": "· {{count}} 个 commit"
+    },
+    "toolModel": {
+      "heading": "工具 / 模型分布",
+      "aiLinesColumn": "AI 行数"
+    },
+    "rawLinks": {
+      "notesTitle": "查看 git notes --ref=ai 原始内容",
+      "notesLabel": "查看原始 notes",
+      "showTitle": "git-ai show <sha> 原文",
+      "copySectionTitle": "复制{{label}}",
+      "close": "关闭"
+    },
+    "blameDialog": {
+      "aiLineCount": "AI {{count}} 行",
+      "restore": "还原",
+      "fullscreen": "全屏",
+      "loading": "加载中…",
+      "copyFullSuffix": "(全文)",
+      "jsonSectionLabel": "JSON 元数据",
+      "attestationsSectionLabel": "Attestations(文件 / 行号归因)",
+      "showRawLoading": "正在调 git-ai show…"
+    },
+    "banner": {
+      "gotoHooks": "前往 Hooks"
+    },
+    "copyFailedToast": "复制失败"
   },
   "formula": {
     "definition": "是什么",

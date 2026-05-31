@@ -86,7 +86,63 @@
       "refreshNow": "Refresh now",
       "refreshing": "Refreshing…",
       "cachePolicy": "Stats on this page are considered stale after 30s automatically; switching commits / repositories or clicking Refresh re-fetches. git-ai stats --json runs as a local subprocess and uploads nothing."
-    }
+    },
+    "loading": "Parsing git-ai stats…",
+    "error": "Parse failed: {{message}}",
+    "filter": {
+      "searchPlaceholder": "Search message / sha…",
+      "noUserEmail": "git user.email not configured; \"Only mine\" filter is unavailable"
+    },
+    "summary": {
+      "truncatedTitle": "Older commits may not be included",
+      "truncatedBadge": "(reached limit {{limit}})",
+      "failedCount": "{{count}} failed to collect"
+    },
+    "detail": {
+      "workingTitle": "Uncommitted working tree",
+      "emptyHint": "Select a commit to view attribution details",
+      "failedNotice": "Collecting git-ai stats for this commit failed; the numbers below are 0-bucket placeholders, not real data. Refresh or check Diagnostic.",
+      "bucketBreakdown": "Human {{human}} · Unattributed {{unknown}} · AI {{ai}}"
+    },
+    "footer": "Parsed locally, never uploaded · Cached {{seconds}}s · Per-file shows only real AI lines (no fabricated denominator)",
+    "metric": {
+      "aiShare": "AI Share",
+      "aiLines": "AI Lines",
+      "totalLines": "Total Lines",
+      "authors": "Contributors"
+    },
+    "commitList": {
+      "workingLabel": "Uncommitted changes",
+      "workingHint": "Local working tree, not yet committed",
+      "liveBadge": "Live",
+      "committedHistory": "Committed history",
+      "commitCount": "· {{count}} commits"
+    },
+    "toolModel": {
+      "heading": "Tool / Model Breakdown",
+      "aiLinesColumn": "AI Lines"
+    },
+    "rawLinks": {
+      "notesTitle": "View raw git notes --ref=ai content",
+      "notesLabel": "View raw notes",
+      "showTitle": "git-ai show <sha> raw output",
+      "copySectionTitle": "Copy {{label}}",
+      "close": "Close"
+    },
+    "blameDialog": {
+      "aiLineCount": "AI {{count}} lines",
+      "restore": "Restore",
+      "fullscreen": "Fullscreen",
+      "loading": "Loading…",
+      "copyFullSuffix": " (full)",
+      "jsonSectionLabel": "JSON metadata",
+      "attestationsSectionLabel": "Attestations (file / line attribution)",
+      "showRawLoading": "Running git-ai show…"
+    },
+    "banner": {
+      "gotoHooks": "Go to Hooks"
+    },
+    "copyFailedToast": "Copy failed"
   },
   "formula": {
     "definition": "What it is",

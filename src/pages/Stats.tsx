@@ -165,7 +165,7 @@ export default function StatsPage() {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        正在解析 git-ai stats…
+        {t("stats.loading")}
       </div>
     );
   }
@@ -173,7 +173,7 @@ export default function StatsPage() {
     return (
       <div className="p-6">
         <div className="rounded-md border border-danger bg-danger-muted p-4 text-sm text-danger">
-          解析失败:{(commitsQ.error as Error).message}
+          {t("stats.error", { message: (commitsQ.error as Error).message })}
         </div>
       </div>
     );
@@ -212,14 +212,14 @@ export default function StatsPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="搜索 message / sha…"
+            placeholder={t("stats.filter.searchPlaceholder")}
             className="w-56 rounded-md border border-border bg-card py-1 pl-7 pr-2 text-xs focus:border-primary focus:outline-hidden focus:ring-1 focus:ring-ring"
           />
         </div>
         <ScopeToggle onlyMine={onlyMine} onChange={setOnlyMine} />
         {onlyMine && !userEmail && (
           <span className="text-[11px] text-warning-foreground dark:text-warning">
-            未配置 git user.email,「只看我」无法过滤
+            {t("stats.filter.noUserEmail")}
           </span>
         )}
         <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
@@ -228,15 +228,15 @@ export default function StatsPage() {
             {payload?.truncated && (
               <span
                 className="ml-1 text-warning-foreground dark:text-warning"
-                title="可能有更老 commit 未纳入"
+                title={t("stats.summary.truncatedTitle")}
               >
-                (达上限 {COMMIT_LIST_LIMIT})
+                {t("stats.summary.truncatedBadge", { limit: COMMIT_LIST_LIMIT })}
               </span>
             )}
           </span>
           {failedShas.size > 0 && (
             <span className="text-danger" title={[...failedShas].join("\n")}>
-              {failedShas.size} 条采集失败
+              {t("stats.summary.failedCount", { count: failedShas.size })}
             </span>
           )}
           <span className="font-medium text-primary">AI {formatPercent(agg.aiPct)}</span>
@@ -278,7 +278,9 @@ export default function StatsPage() {
           <div className="h-full overflow-y-auto">
             {isWorking ? (
               <div className="space-y-2 p-4">
-                <h2 className="text-sm font-semibold text-foreground">当前工作树未提交</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  {t("stats.detail.workingTitle")}
+                </h2>
                 <p className="text-[11px] text-muted-foreground">{t("stats.workingScopeHint")}</p>
                 <WorkingDirSummary
                   repoPath={repoPath}
@@ -297,7 +299,7 @@ export default function StatsPage() {
               />
             ) : (
               <div className="flex h-full items-center justify-center p-6 text-xs text-muted-foreground">
-                选一个 commit 看归因详情
+                {t("stats.detail.emptyHint")}
               </div>
             )}
           </div>
@@ -305,7 +307,7 @@ export default function StatsPage() {
       />
 
       <footer className="shrink-0 border-t border-border px-4 py-1.5 text-[10px] text-muted-foreground">
-        本机解析,不上传 · 缓存 {STATS_STALE_TIME_SECONDS}s · 每文件只显真实 AI 行数(不编造分母)
+        {t("stats.footer", { seconds: STATS_STALE_TIME_SECONDS })}
       </footer>
 
       {openFile && selectedSha && (
@@ -321,14 +323,19 @@ export default function StatsPage() {
 // 指标看板:与作者归因(People)同款卡片布局。AI 行 / 总行拆成两张独立卡,
 // 不再挤成 "X / Y" 单行(大数字会换行),每卡一个数字。
 function MetricsBar({ agg, count }: { agg: ReturnType<typeof aggregate>; count: number }) {
+  const { t } = useTranslation();
   return (
     <div className="shrink-0 border-b border-border p-3">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-        <MetricCard title="AI 占比" display={formatPercent(agg.aiPct)} tone="ai" />
-        <MetricCard title="AI 行" display={formatInt(agg.ai)} tone="ai" />
-        <MetricCard title="总行" display={formatInt(agg.total)} />
+        <MetricCard
+          title={t("stats.metric.aiShare")}
+          display={formatPercent(agg.aiPct)}
+          tone="ai"
+        />
+        <MetricCard title={t("stats.metric.aiLines")} display={formatInt(agg.ai)} tone="ai" />
+        <MetricCard title={t("stats.metric.totalLines")} display={formatInt(agg.total)} />
         <MetricCard title="Commits" display={formatInt(count)} />
-        <MetricCard title="参与人" display={formatInt(agg.authors)} />
+        <MetricCard title={t("stats.metric.authors")} display={formatInt(agg.authors)} />
       </div>
     </div>
   );
@@ -351,6 +358,7 @@ function CommitList({
   onSelect: (sha: string) => void;
   onSelectWorking: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       {/* 置顶:本地未提交改动(实时,尚未进入提交历史)—— 沿用 git 客户端"历史顶部放未提交"惯例。
@@ -365,18 +373,20 @@ function CommitList({
       >
         <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate">
-          <span className="font-medium text-foreground">未提交改动</span>
-          <span className="ml-1.5 text-muted-foreground">本地工作树,还没 commit</span>
+          <span className="font-medium text-foreground">{t("stats.commitList.workingLabel")}</span>
+          <span className="ml-1.5 text-muted-foreground">{t("stats.commitList.workingHint")}</span>
         </span>
         <span className="shrink-0 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-          实时
+          {t("stats.commitList.liveBadge")}
         </span>
       </button>
 
       {/* 分隔:以下为已提交历史(区分上面的"未提交"实时态) */}
       <div className="flex items-center gap-2 border-y border-border bg-muted/30 px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        已提交历史
-        <span className="font-normal normal-case">· {commits.length} 个 commit</span>
+        {t("stats.commitList.committedHistory")}
+        <span className="font-normal normal-case">
+          {t("stats.commitList.commitCount", { count: commits.length })}
+        </span>
       </div>
 
       <CommitAttributionList
@@ -404,6 +414,7 @@ function CommitDetail({
   onViewNotes: () => void;
   onViewShow: () => void;
 }) {
+  const { t } = useTranslation();
   const total = commitTotal(commit.stats);
   const rates = deriveRates(commit.stats, total);
   return (
@@ -428,8 +439,7 @@ function CommitDetail({
 
       {failed && (
         <div className="rounded-md border border-danger bg-danger-muted p-2 text-[11px] text-danger">
-          该 commit 的 git-ai stats 采集失败,下方数字为 0 桶占位,**不是真实数据**。刷新或查看
-          Diagnostic。
+          {t("stats.detail.failedNotice")}
         </div>
       )}
 
@@ -437,8 +447,11 @@ function CommitDetail({
         <StatsBar stats={commit.stats} total={total} />
         <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
           <span>
-            人 {formatInt(commit.stats.human_additions)} · 未归因{" "}
-            {formatInt(commit.stats.unknown_additions)} · AI {formatInt(commit.stats.ai_additions)}
+            {t("stats.detail.bucketBreakdown", {
+              human: formatInt(commit.stats.human_additions),
+              unknown: formatInt(commit.stats.unknown_additions),
+              ai: formatInt(commit.stats.ai_additions),
+            })}
           </span>
           <FormulaPopover metricId="ai_share" />
         </div>
@@ -471,7 +484,7 @@ function NoteBanners({ noteKind }: { noteKind: NoteKind | null }) {
     <Banner
       tone="warn"
       text={t("stats.noteText.workingLogsMissing")}
-      cta={{ label: "前往 Hooks", onClick: () => router.navigate("hooks") }}
+      cta={{ label: t("stats.banner.gotoHooks"), onClick: () => router.navigate("hooks") }}
     />
   );
 }
@@ -512,19 +525,20 @@ function Banner({
 // ============ Tool/Model breakdown 表 ============
 
 function ToolModelTable({ breakdown }: { breakdown: Record<string, ToolModelStats> }) {
+  const { t } = useTranslation();
   const entries = useMemo(() => Object.entries(breakdown), [breakdown]);
   if (entries.length === 0) return null;
   return (
     <div>
       <div className="mb-1 flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        工具 / 模型分布
+        {t("stats.toolModel.heading")}
         <FormulaPopover metricId="tool_model_breakdown" />
       </div>
       <table className="w-full text-xs">
         <thead className="border-b border-border text-left text-[10px] uppercase tracking-wide text-muted-foreground">
           <tr>
             <th className="py-1 pr-4 font-medium">tool::model</th>
-            <th className="py-1 font-medium">AI 行数</th>
+            <th className="py-1 font-medium">{t("stats.toolModel.aiLinesColumn")}</th>
           </tr>
         </thead>
         <tbody>
@@ -555,15 +569,15 @@ function RawDataLinks({
       <button
         type="button"
         onClick={onViewNotes}
-        title="查看 git notes --ref=ai 原始内容"
+        title={t("stats.rawLinks.notesTitle")}
         className="inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-muted hover:text-foreground"
       >
-        查看原始 notes
+        {t("stats.rawLinks.notesLabel")}
       </button>
       <button
         type="button"
         onClick={onViewShow}
-        title="git-ai show <sha> 原文"
+        title={t("stats.rawLinks.showTitle")}
         className="inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-muted hover:text-foreground"
       >
         <FileText className="h-3 w-3" />
@@ -638,12 +652,14 @@ function BlameDialog({
             {sha.slice(0, 7)}
           </code>
           {aiCount > 0 && (
-            <span className="shrink-0 text-xs font-normal text-primary">AI {aiCount} 行</span>
+            <span className="shrink-0 text-xs font-normal text-primary">
+              {t("stats.blameDialog.aiLineCount", { count: aiCount })}
+            </span>
           )}
           <button
             type="button"
             onClick={() => setFull((v) => !v)}
-            title={full ? "还原" : "全屏"}
+            title={full ? t("stats.blameDialog.restore") : t("stats.blameDialog.fullscreen")}
             className="ml-1 rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             {full ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -658,7 +674,7 @@ function BlameDialog({
         {fileQ.isLoading || blameQ.isLoading ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            加载中…
+            {t("stats.blameDialog.loading")}
           </div>
         ) : degradedReason ? (
           <FileDegradedCard reason={degradedReason} />
@@ -736,7 +752,7 @@ function ShowRawDialog({ sha, onClose }: { sha: string | null; onClose: () => vo
       await navigator.clipboard.writeText(text);
     },
     onSuccess: () => toast.success(t("showRaw.copiedToast")),
-    onError: (e) => toast.error("复制失败", { description: (e as Error).message }),
+    onError: (e) => toast.error(t("stats.copyFailedToast"), { description: (e as Error).message }),
   });
 
   const payload = showQ.data?.status === "ok" ? showQ.data.payload : null;
@@ -764,14 +780,15 @@ function ShowRawDialog({ sha, onClose }: { sha: string | null; onClose: () => vo
             ) : (
               <Copy className="h-3.5 w-3.5" />
             )}
-            {t("showRaw.copyButton")}(全文)
+            {t("showRaw.copyButton")}
+            {t("stats.blameDialog.copyFullSuffix")}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            关闭
+            {t("stats.rawLinks.close")}
           </button>
         </>
       }
@@ -779,7 +796,7 @@ function ShowRawDialog({ sha, onClose }: { sha: string | null; onClose: () => vo
       {showQ.isLoading && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          正在调 git-ai show…
+          {t("stats.blameDialog.showRawLoading")}
         </div>
       )}
       {showQ.isError && (
@@ -791,14 +808,14 @@ function ShowRawDialog({ sha, onClose }: { sha: string | null; onClose: () => vo
       {payload && !isEmpty && sections && (
         <div className="space-y-3">
           <RawSection
-            label="JSON 元数据"
+            label={t("stats.blameDialog.jsonSectionLabel")}
             body={sections.json}
             onCopy={(s) => copyM.mutate(s)}
             copyPending={copyM.isPending}
           />
           {sections.attestations !== null && (
             <RawSection
-              label="Attestations(文件 / 行号归因)"
+              label={t("stats.blameDialog.attestationsSectionLabel")}
               body={sections.attestations}
               onCopy={(s) => copyM.mutate(s)}
               copyPending={copyM.isPending}
@@ -821,6 +838,7 @@ function RawSection({
   onCopy: (s: string) => void;
   copyPending: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <section className="rounded-md border border-border">
       <header className="flex items-center justify-between border-b border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground">
@@ -830,7 +848,7 @@ function RawSection({
           onClick={() => onCopy(body)}
           disabled={copyPending}
           className="inline-flex items-center gap-1 rounded-sm p-0.5 text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-50"
-          title={`复制${label}`}
+          title={t("stats.rawLinks.copySectionTitle", { label })}
         >
           <Copy className="h-3 w-3" />
         </button>
