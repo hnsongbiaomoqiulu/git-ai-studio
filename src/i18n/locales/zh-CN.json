@@ -1169,7 +1169,7 @@
     "hooks": "Hooks 配置",
     "logs": "日志",
     "manual": "用户手册",
-    "footer": "v0.1.0 · 本机解析,不上传数据"
+    "footer": "本机解析,不上传数据"
   },
   "rail": {
     "group": {

@@ -28,7 +28,9 @@ import {
   BookOpen,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { getVersion } from "@tauri-apps/api/app";
 
 import { cn } from "../../lib/cn";
 import type { RouteId } from "../../router";
@@ -83,6 +85,14 @@ export function Rail({
 }) {
   const { t } = useTranslation();
 
+  // 版本号从 Tauri 运行时读取,避免写死在文案里漂移(非 Tauri 调试环境下为空串,footer 仅显隐私语)。
+  const [appVersion, setAppVersion] = useState("");
+  useEffect(() => {
+    getVersion()
+      .then(setAppVersion)
+      .catch(() => setAppVersion(""));
+  }, []);
+
   return (
     <aside className="flex w-[200px] shrink-0 flex-col border-r border-border bg-background">
       <div className="px-4 pt-4 pb-3">
@@ -122,6 +132,7 @@ export function Rail({
       </nav>
 
       <div className="border-t border-border px-4 py-2 text-[10px] text-muted-foreground">
+        {appVersion && `v${appVersion} · `}
         {t("nav.footer")}
       </div>
     </aside>
