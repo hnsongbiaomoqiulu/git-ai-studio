@@ -305,7 +305,7 @@ export default function InstallPage({ embedded = false }: { embedded?: boolean }
               latest?.tag &&
               normalizeTag(installed.version) === normalizeTag(latest.tag)
             );
-            const disabled = running || installM.isPending || !latest || isUpToDate;
+            const disabled = running || installM.isPending || isUpToDate;
             const label = isUpToDate
               ? `已是最新 ${latest!.tag}`
               : installed?.installed
