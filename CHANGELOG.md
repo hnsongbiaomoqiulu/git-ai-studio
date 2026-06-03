@@ -14,6 +14,35 @@ Version bumps are manual — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing-a-n
 - Codex diagnostics now detect legacy `~/.codex/hooks.json` hooks and explain that inline `config.toml` hooks require git-ai 1.4.8+ (the release that migrated Codex to inline TOML), guiding the user to upgrade git-ai instead of silently staying red.
 - The Install page no longer disables "Install / Upgrade to latest" when the GitHub Releases API is unreachable (rate-limited or blocked); the official install script resolves the latest version on its own.
 
+## [0.3.1] - 2026-06-01
+
+### Fixed
+
+- Desktop companion ("Ink pet"): fixed the transparent window rendering a black background and a stray scrollbar (mark the window before mount + flatten the layout with declarative CSS).
+
+## [0.3.0] - 2026-06-01
+
+### Added
+
+- Hook detection for two more AI agents — **Gemini** and **Pi** (backend probes plus frontend status), bringing the agent matrix to six.
+
+### Changed
+
+- Line-level Blame is now part of commit attribution: per-line authorship opens as a drill-down dialog instead of a separate route (see [ADR-013](docs/adr/0013-blame-into-commit-attribution.md)).
+- Completed bilingual (Simplified Chinese / English) i18n across the remaining pages — Diagnostics, Dashboard, Commits, Settings, People, Notes, and the repo setup guide.
+- Streamlined the Diagnostics page to a health-first layout (dropped the summary card and the raw-report drawer) and trimmed the Settings / People / Notes headers into click-to-reveal info.
+- The sidebar footer version is now read at runtime instead of being hardcoded, so it can no longer drift.
+
+### Fixed
+
+- The desktop pet's right-click menu and hover bubble now follow the main window's language (language is carried in the one-way pet-state stream).
+- `git-ai debug` is no longer invoked with the `report` sub-argument that upstream removed (it was being rejected).
+- An empty checkpoint set under the current HEAD is treated as a normal empty state (neutral info) instead of being flagged as an actionable problem.
+
+### Removed
+
+- The login-state diagnostic check — the local tool does not require login.
+
 ## [0.2.0] - 2026-05-29
 
 ### Added
@@ -41,6 +70,8 @@ Version bumps are manual — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing-a-n
 - Self-hosted hook server (Windows scheduled task + VBS shim + Node HTTP server). Hooks now go exclusively through the official `git ai install-hooks`.
 - Feishu webhook push (replaced by OS-native notifications).
 
-[Unreleased]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/bujueyunjian/git-ai-studio/releases/tag/v0.1.0
