@@ -8,11 +8,21 @@ Version bumps are manual — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing-a-n
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-06-03
+
+### Added
+
+- The repository setup guide can now batch-add multiple repositories to an aggregation set in one step, instead of one at a time.
+
 ### Fixed
 
 - "Fix this" for an individual agent now re-probes after running `git-ai install` and reports an honest failure (with the real reason) instead of always reporting success.
 - Codex diagnostics now detect legacy `~/.codex/hooks.json` hooks and explain that inline `config.toml` hooks require git-ai 1.4.8+ (the release that migrated Codex to inline TOML), guiding the user to upgrade git-ai instead of silently staying red.
 - The Install page no longer disables "Install / Upgrade to latest" when the GitHub Releases API is unreachable (rate-limited or blocked); the official install script resolves the latest version on its own.
+- Commit rows now reveal their full details (complete message + SHA) on hover, with the hover text fully localized (Simplified Chinese / English).
+- The branch dropdown now shows complete per-row hover info (full branch name + SHA) and is no longer truncated by an inner `title` attribute.
+- Closing the app no longer hangs while the cc-switch guardian watcher shuts down (the debouncer is now stopped and dropped before joining the worker, and the lock is released before the handle is dropped).
+- The desktop companion ("Ink pet") no longer occasionally flashes a black frame on open (the pet window now gets a transparent background color and an initial size that matches its runtime size).
 
 ## [0.3.1] - 2026-06-01
 
@@ -70,7 +80,8 @@ Version bumps are manual — see [CONTRIBUTING.md](CONTRIBUTING.md#releasing-a-n
 - Self-hosted hook server (Windows scheduled task + VBS shim + Node HTTP server). Hooks now go exclusively through the official `git ai install-hooks`.
 - Feishu webhook push (replaced by OS-native notifications).
 
-[Unreleased]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/bujueyunjian/git-ai-studio/compare/v0.1.0...v0.2.0
