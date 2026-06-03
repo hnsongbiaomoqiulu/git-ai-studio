@@ -1163,6 +1163,39 @@
               "text": "This syncs AI metadata (Git Notes), not code. Do not set git config --global remote.origin.push=refs/notes/* yourself — the wildcard also pushes git-ai's tracking ref refs/notes/ai-remote/*, affecting other repos and notes-based tools, contrary to git-ai practice."
             }
           ]
+        },
+        {
+          "q": "After a commit the pet / widget shows \"last commit attribution failed\", but the attribution is actually intact?",
+          "a": [
+            {
+              "kind": "text",
+              "text": "This usually happens after a git commit --amend or rebase on an already-tagged commit (the SHA changed). git-ai migrates the authorship note from the old SHA to the new one; once migration finishes the attribution is complete, but the widget may stay on the transient \"failed\" state. First confirm the attribution really is there with the official commands:"
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git-ai log -2",
+              "caption": "Show the last 2 commits and their AI authorship notes (backend-agnostic, works logged in or out)."
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git-ai status",
+              "caption": "Show the current repository's attribution status."
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git-ai bg status",
+              "caption": "Check the background collector's health; last_error should be null."
+            },
+            {
+              "kind": "text",
+              "text": "If the attribution is present (AI line counts look right), double-click the widget to re-run diagnostics and clear the red state — it's UI lag, not data loss. Advanced: in logged-out / local mode you can read a commit's raw note directly; when logged in (HTTP backend) the notes live in refs/notes/ai-display rather than refs/notes/ai, so the command below will be empty — trust git-ai log instead."
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git notes --ref=ai show <commit>",
+              "caption": "The commit's raw authorship note (has data only in local / logged-out mode)."
+            }
+          ]
         }
       ]
     }

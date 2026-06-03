@@ -1163,6 +1163,39 @@
               "text": "本质是同步 AI 元数据(Git Notes),不是同步代码。不要自己配 git config --global remote.origin.push=refs/notes/* —— 通配会把 git-ai 的 tracking ref refs/notes/ai-remote/* 一起推到远端,影响其他仓库与用 notes 的工具,与 git-ai 实践相悖。"
             }
           ]
+        },
+        {
+          "q": "提交后宠物 / widget 显示「上次提交打标失败」,但归因其实没丢?",
+          "a": [
+            {
+              "kind": "text",
+              "text": "常见于对已打标的提交做了 git commit --amend 或 rebase(改了 SHA)。git-ai 会把归因 note 从旧 SHA 迁到新 SHA,迁移完成后归因是完整的,widget 可能停在迁移瞬间的「失败」态没刷新。先用官方命令核对归因是否真的在:"
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git-ai log -2",
+              "caption": "看最近 2 个提交及其 AI 归因 note(后端无关,登录 / 登出都适用)。"
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git-ai status",
+              "caption": "看当前仓库的归因状态。"
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git-ai bg status",
+              "caption": "看后台采集服务是否健康,last_error 应为 null。"
+            },
+            {
+              "kind": "text",
+              "text": "若归因已在(AI 行数正常),双击 widget 重跑诊断即可清掉红色 —— 这是 UI 滞后,不是数据丢失。进阶:登出 / 本地模式下可直接看某个提交的原始 note;登录用 HTTP 后端时归因不在 refs/notes/ai、而在 refs/notes/ai-display,下面这条会是空的,以 git-ai log 为准。"
+            },
+            {
+              "kind": "cmd",
+              "cmd": "git notes --ref=ai show <commit>",
+              "caption": "该提交的原始归因 note(仅本地 / 登出模式有数据)。"
+            }
+          ]
         }
       ]
     }
